@@ -94,12 +94,24 @@ const Home = forwardRef<HomeRef, HomeProps>(
       mutationFn: async ({ id, data }: { id: string; data: Partial<Task> }) => {
         return await apiRequest("PATCH", `/api/tasks/${id}`, data);
       },
-      onSuccess: () => {
+      onSuccess: (_, variables) => {
         queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-        toast({
-          title: "Tarea actualizada",
-          description: "Los cambios se han guardado correctamente",
-        });
+        
+        // Si se está actualizando el estado de completado, usar mensaje específico
+        if (variables.data.completed !== undefined) {
+          toast({
+            title: variables.data.completed ? "Tarea marcada como completada" : "Tarea marcada como pendiente",
+            description: variables.data.completed 
+              ? "La tarea se ha completado correctamente" 
+              : "La tarea se ha marcado como pendiente",
+          });
+        } else {
+          // Para otras actualizaciones (edición de título, descripción, etc.)
+          toast({
+            title: "Tarea actualizada",
+            description: "Los cambios se han guardado correctamente",
+          });
+        }
       },
       onError: () => {
         toast({

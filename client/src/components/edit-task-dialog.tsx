@@ -217,14 +217,6 @@ export function EditTaskDialog({ task, open, onOpenChange, onSave }: EditTaskDia
             />
 
             <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                data-testid="button-cancel-edit"
-              >
-                Cancelar
-              </Button>
               <Button type="submit" data-testid="button-save-edit">
                 Guardar cambios
               </Button>
