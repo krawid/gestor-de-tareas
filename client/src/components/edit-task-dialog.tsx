@@ -190,7 +190,7 @@ export function EditTaskDialog({ task, open, onOpenChange, onSave }: EditTaskDia
                         id="dueDate"
                         type="date"
                         value={field.value ? new Date(field.value).toISOString().split('T')[0] : ""}
-                        onChange={(e) => field.onChange(e.target.value ? new Date(e.target.value + 'T12:00:00') : null)}
+                        onBlur={(e) => field.onChange(e.target.value ? new Date(e.target.value + 'T12:00:00') : null)}
                         className="text-base"
                         data-testid="input-edit-due-date"
                       />

@@ -19,6 +19,7 @@ Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante 
     - Sidebar siempre visible (collapsible="none") en móvil y desktop para garantizar accesibilidad
     - Reemplazado confirm() nativo con AlertDialog de Radix UI para confirmación de eliminación
     - Eliminados aria-describedby innecesarios de DialogContent (mantenidos solo en formularios)
+    - Selectores de fecha usan onBlur en lugar de onChange para evitar establecer fecha automáticamente al navegar
   - **Formularios modales**: 
     - Añadir tarea ahora es un diálogo modal (evita mezcla con tareas existentes)
     - Selector de lista integrado en formularios de crear/editar tarea (select nativo)

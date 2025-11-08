@@ -175,7 +175,7 @@ export function AddTaskDialog({ open, onOpenChange, onAdd, lists }: AddTaskDialo
                                 : ""
                               : ""
                           }
-                          onChange={(e) => {
+                          onBlur={(e) => {
                             const value = e.target.value;
                             field.onChange(value ? value : null);
                           }}
