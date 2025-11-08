@@ -24,6 +24,7 @@ export const insertListSchema = createInsertSchema(lists).omit({
 });
 
 export const insertTaskSchema = createInsertSchema(tasks, {
+  title: z.string().min(1, "El título es requerido"),
   dueDate: z.union([z.string(), z.date(), z.null()]).transform((val) => {
     if (val === null || val === undefined) return null;
     if (typeof val === 'string') {
