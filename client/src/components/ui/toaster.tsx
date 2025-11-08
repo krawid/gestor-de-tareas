@@ -28,7 +28,10 @@ export function Toaster() {
           </Toast>
         )
       })}
-      <ToastViewport aria-hidden={!hasToasts} style={{ display: hasToasts ? undefined : 'none' }} />
+      <ToastViewport 
+        aria-hidden={hasToasts ? undefined : true} 
+        style={{ display: hasToasts ? undefined : 'none' }} 
+      />
     </ToastProvider>
   )
 }
