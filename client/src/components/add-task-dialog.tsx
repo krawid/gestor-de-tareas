@@ -165,26 +165,32 @@ export function AddTaskDialog({ open, onOpenChange, onAdd, lists }: AddTaskDialo
                 control={form.control}
                 name="dueDate"
                 render={({ field }) => {
-                  const [dateValue, setDateValue] = useState(() => 
-                    field.value ? new Date(field.value).toISOString().split('T')[0] : ""
-                  );
-                  const [timeValue, setTimeValue] = useState(() => {
-                    if (!field.value) return "";
-                    const date = new Date(field.value);
-                    const hours = String(date.getHours()).padStart(2, '0');
-                    const minutes = String(date.getMinutes()).padStart(2, '0');
-                    return `${hours}:${minutes}`;
-                  });
+                  // Derivar valores directamente del field.value
+                  const currentDate = field.value ? new Date(field.value) : null;
+                  const dateValue = currentDate 
+                    ? `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`
+                    : "";
+                  const timeValue = currentDate
+                    ? `${String(currentDate.getHours()).padStart(2, '0')}:${String(currentDate.getMinutes()).padStart(2, '0')}`
+                    : "";
 
-                  const updateDateTime = (newDate: string, newTime: string) => {
-                    if (!newDate) {
+                  const updateDateTime = (newDateStr: string, newTimeStr: string) => {
+                    if (!newDateStr) {
                       field.onChange(null);
                       return;
                     }
                     
-                    const timeToUse = newTime || "00:00";
-                    const dateTimeString = `${newDate}T${timeToUse}`;
-                    field.onChange(new Date(dateTimeString));
+                    // Parsear la fecha
+                    const [year, month, day] = newDateStr.split('-').map(Number);
+                    
+                    // Parsear la hora (o usar medianoche si no hay hora)
+                    const [hours, minutes] = newTimeStr 
+                      ? newTimeStr.split(':').map(Number)
+                      : [0, 0];
+                    
+                    // Construir el Date en zona horaria local
+                    const newDate = new Date(year, month - 1, day, hours, minutes);
+                    field.onChange(newDate);
                   };
 
                   return (
@@ -198,9 +204,7 @@ export function AddTaskDialog({ open, onOpenChange, onAdd, lists }: AddTaskDialo
                               type="date"
                               value={dateValue}
                               onChange={(e) => {
-                                const value = e.target.value;
-                                setDateValue(value);
-                                updateDateTime(value, timeValue);
+                                updateDateTime(e.target.value, timeValue);
                               }}
                               className="text-base"
                               data-testid="input-task-due-date"
@@ -212,8 +216,6 @@ export function AddTaskDialog({ open, onOpenChange, onAdd, lists }: AddTaskDialo
                               size="icon"
                               variant="ghost"
                               onClick={() => {
-                                setDateValue("");
-                                setTimeValue("");
                                 field.onChange(null);
                               }}
                               aria-label="Limpiar fecha de vencimiento"
@@ -235,9 +237,7 @@ export function AddTaskDialog({ open, onOpenChange, onAdd, lists }: AddTaskDialo
                               type="time"
                               value={timeValue}
                               onChange={(e) => {
-                                const value = e.target.value;
-                                setTimeValue(value);
-                                updateDateTime(dateValue, value);
+                                updateDateTime(dateValue, e.target.value);
                               }}
                               className="text-base"
                               data-testid="input-task-due-time"
