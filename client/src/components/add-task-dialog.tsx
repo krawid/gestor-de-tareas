@@ -23,15 +23,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 
-// Helper para formatear Date a string datetime-local sin conversión de zona horaria
-function formatDateTimeLocal(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  return `${year}-${month}-${day}T${hours}:${minutes}`;
-}
 
 interface AddTaskDialogProps {
   open: boolean;
@@ -174,51 +165,90 @@ export function AddTaskDialog({ open, onOpenChange, onAdd, lists }: AddTaskDialo
                 control={form.control}
                 name="dueDate"
                 render={({ field }) => {
-                  const [isInteracting, setIsInteracting] = useState(false);
-                  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-                  const currentValue = field.value
-                    ? field.value instanceof Date
-                      ? formatDateTimeLocal(field.value)
-                      : ""
-                    : "";
+                  const [dateValue, setDateValue] = useState(() => 
+                    field.value ? new Date(field.value).toISOString().split('T')[0] : ""
+                  );
+                  const [timeValue, setTimeValue] = useState(() => {
+                    if (!field.value) return "";
+                    const date = new Date(field.value);
+                    const hours = String(date.getHours()).padStart(2, '0');
+                    const minutes = String(date.getMinutes()).padStart(2, '0');
+                    return `${hours}:${minutes}`;
+                  });
+
+                  const updateDateTime = (newDate: string, newTime: string) => {
+                    if (!newDate) {
+                      field.onChange(null);
+                      return;
+                    }
+                    
+                    const timeToUse = newTime || "00:00";
+                    const dateTimeString = `${newDate}T${timeToUse}`;
+                    field.onChange(new Date(dateTimeString));
+                  };
 
                   return (
-                    <FormItem>
-                      <FormLabel htmlFor="task-due-date">Fecha y hora de vencimiento</FormLabel>
-                      <div className="flex gap-2">
-                        <FormControl>
-                          <Input
-                            id="task-due-date"
-                            type="datetime-local"
-                            value={currentValue}
-                            readOnly={isIOS && !isInteracting}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              field.onChange(value ? new Date(value) : null);
-                            }}
-                            onClick={() => isIOS && setIsInteracting(true)}
-                            onBlur={() => {
-                              if (isIOS) setIsInteracting(false);
-                            }}
-                            className="text-base"
-                            data-testid="input-task-due-date"
-                          />
-                        </FormControl>
-                        {dueDateValue && (
-                          <Button
-                            type="button"
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => field.onChange(null)}
-                            aria-label="Limpiar fecha de vencimiento"
-                            data-testid="button-clear-due-date"
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                      <FormMessage />
-                    </FormItem>
+                    <div className="space-y-4">
+                      <FormItem>
+                        <FormLabel htmlFor="task-due-date">Fecha de vencimiento</FormLabel>
+                        <div className="flex gap-2">
+                          <FormControl>
+                            <Input
+                              id="task-due-date"
+                              type="date"
+                              value={dateValue}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                setDateValue(value);
+                                updateDateTime(value, timeValue);
+                              }}
+                              className="text-base"
+                              data-testid="input-task-due-date"
+                            />
+                          </FormControl>
+                          {dueDateValue && (
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => {
+                                setDateValue("");
+                                setTimeValue("");
+                                field.onChange(null);
+                              }}
+                              aria-label="Limpiar fecha de vencimiento"
+                              data-testid="button-clear-due-date"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+
+                      {dateValue && (
+                        <FormItem>
+                          <FormLabel htmlFor="task-due-time">Hora de vencimiento</FormLabel>
+                          <FormControl>
+                            <Input
+                              id="task-due-time"
+                              type="time"
+                              value={timeValue}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                setTimeValue(value);
+                                updateDateTime(dateValue, value);
+                              }}
+                              className="text-base"
+                              data-testid="input-task-due-time"
+                            />
+                          </FormControl>
+                          <p className="text-sm text-muted-foreground">
+                            Opcional. Si no especificas hora, será medianoche (00:00)
+                          </p>
+                        </FormItem>
+                      )}
+                    </div>
                   );
                 }}
               />
