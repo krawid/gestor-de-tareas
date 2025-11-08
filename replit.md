@@ -29,7 +29,8 @@ Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante 
     - Toast notifications con región aria-live separada (solución a bug Radix UI #3634)
     - Región sr-only siempre presente para que NVDA la registre al cargar la página
     - Notificaciones descriptivas: "Tarea marcada como completada/pendiente" en lugar de mensaje genérico
-    - aria-current="page" en botones de lista activos en sidebar
+    - aria-pressed en botones de filtro/lista (VoiceOver requiere aria-pressed en botones, no aria-current)
+    - Grupos de botones con role="group" y aria-label descriptivo
     - Jerarquía de encabezados coherente en todas las vistas
     - Sidebar siempre visible (toggle eliminado por no ser útil para lectores de pantalla)
   - **Fechas de vencimiento**: Selector HTML5, indicadores visuales, manejo correcto de zona horaria

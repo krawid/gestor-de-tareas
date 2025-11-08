@@ -93,7 +93,7 @@ export function AppSidebar({ selectedListId, onListSelect, onAddList, taskFilter
             Mis Tareas
           </h2>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu role="group" aria-label="Filtros de tareas">
               <SidebarMenuItem>
                 <SidebarMenuButton
                   onClick={() => {
@@ -101,7 +101,7 @@ export function AppSidebar({ selectedListId, onListSelect, onAddList, taskFilter
                     onTaskFilterChange("all");
                   }}
                   isActive={selectedListId === null && taskFilter === "all"}
-                  aria-current={selectedListId === null && taskFilter === "all" ? "page" : undefined}
+                  aria-pressed={selectedListId === null && taskFilter === "all"}
                   data-testid="button-all-tasks"
                 >
                   <List className="h-4 w-4" />
@@ -120,7 +120,7 @@ export function AppSidebar({ selectedListId, onListSelect, onAddList, taskFilter
                     onTaskFilterChange("pending");
                   }}
                   isActive={selectedListId === null && taskFilter === "pending"}
-                  aria-current={selectedListId === null && taskFilter === "pending" ? "page" : undefined}
+                  aria-pressed={selectedListId === null && taskFilter === "pending"}
                   data-testid="button-pending-tasks"
                 >
                   <Circle className="h-4 w-4" />
@@ -139,7 +139,7 @@ export function AppSidebar({ selectedListId, onListSelect, onAddList, taskFilter
                     onTaskFilterChange("completed");
                   }}
                   isActive={selectedListId === null && taskFilter === "completed"}
-                  aria-current={selectedListId === null && taskFilter === "completed" ? "page" : undefined}
+                  aria-pressed={selectedListId === null && taskFilter === "completed"}
                   data-testid="button-completed-tasks"
                 >
                   <CheckCircle2 className="h-4 w-4" />
@@ -163,14 +163,14 @@ export function AppSidebar({ selectedListId, onListSelect, onAddList, taskFilter
             Listas
           </h2>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu role="group" aria-label="Listas personalizadas">
               {lists.map((list) => (
                 <SidebarMenuItem key={list.id}>
                   <div className="flex items-center gap-1 w-full">
                     <SidebarMenuButton
                       onClick={() => onListSelect(list.id)}
                       isActive={selectedListId === list.id}
-                      aria-current={selectedListId === list.id ? "page" : undefined}
+                      aria-pressed={selectedListId === list.id}
                       data-testid={`button-list-${list.id}`}
                       className="flex-1"
                     >
