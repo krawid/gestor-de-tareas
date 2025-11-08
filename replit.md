@@ -4,7 +4,16 @@
 Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante HTML semántico. Diseñada para ser completamente accesible con lectores de pantalla y navegación por teclado, sin uso excesivo de ARIA.
 
 ## Recent Changes
-- **2025-11-08**: Refactorización mayor para mejorar accesibilidad y claridad
+- **2025-11-08 (tarde)**: Sistema de recordatorios para tareas
+  - **Campo reminderMinutes**: Nuevo campo en schema de tareas (entero nullable, minutos antes de dueDate)
+  - **Selector de recordatorio**: Añadido en formularios de crear/editar tarea con opciones: sin recordatorio, 15min, 30min, 1h, 3h, 6h, 12h, 24h antes
+  - **Servicio de notificaciones**: Implementado usando Web Notifications API
+    - Verifica tareas cada minuto para mostrar notificaciones en el momento apropiado
+    - Deduplica notificaciones para evitar repeticiones
+    - Solicita permisos automáticamente cuando hay tareas con recordatorios
+    - Degrada gracefully en navegadores sin soporte para Notifications API
+  - **Accesibilidad**: Selector de recordatorio deshabilitado si no hay fecha de vencimiento, con mensaje explicativo
+- **2025-11-08 (mañana)**: Refactorización mayor para mejorar accesibilidad y claridad
   - **Jerarquía de encabezados**:
     - h1 "Gestor de tareas" como encabezado principal en sidebar
     - h2 "Mis Tareas" en sidebar (navegable con H/Shift+H en NVDA)
@@ -56,7 +65,7 @@ Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante 
 - Validación con Zod
 
 ### Data Model
-- **Tasks**: id, title, description, completed, priority (0-3), listId, dueDate (timestamp)
+- **Tasks**: id, title, description, completed, priority (0-3), listId, dueDate (timestamp), reminderMinutes (integer nullable)
 - **Lists**: id, name, color
 
 ## User Preferences
@@ -66,10 +75,11 @@ Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante 
 
 ## Key Features
 - **Gestión de tareas**:
-  - Crear tareas mediante diálogo modal con campos: título, descripción, lista, prioridad, fecha
+  - Crear tareas mediante diálogo modal con campos: título, descripción, lista, prioridad, fecha, recordatorio
   - Editar y eliminar tareas existentes
   - Marcar tareas como completadas/pendientes
   - Sistema de prioridades (ninguna, baja, media, alta)
+  - Recordatorios con notificaciones del navegador (15min a 24h antes de fecha de vencimiento)
 - **Listas personalizables**:
   - Crear listas con nombre y color
   - Eliminar listas (botón junto a cada lista en sidebar)

@@ -1,4 +1,4 @@
-import { useState, useImperativeHandle, forwardRef } from "react";
+import { useState, useImperativeHandle, forwardRef, useEffect } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { AddTaskDialog } from "@/components/add-task-dialog";
@@ -21,6 +21,11 @@ import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { TaskFilterType } from "@/components/task-filter";
 import type { Task, InsertTask, InsertList, List } from "@shared/schema";
+import { 
+  startNotificationService, 
+  stopNotificationService, 
+  requestNotificationPermission 
+} from "@/lib/notificationService";
 
 interface HomeProps {
   selectedListId: string | null;
@@ -56,6 +61,28 @@ const Home = forwardRef<HomeRef, HomeProps>(
     const { data: lists = [] } = useQuery<List[]>({
       queryKey: ["/api/lists"],
     });
+
+    // Servicio de notificaciones
+    useEffect(() => {
+      // Verificar si el navegador soporta notificaciones
+      if (!("Notification" in window)) {
+        return;
+      }
+
+      // Solicitar permisos si hay tareas con recordatorios
+      const hasReminders = allTasks.some(task => task.reminderMinutes !== null && task.reminderMinutes !== undefined);
+      if (hasReminders && Notification.permission === "default") {
+        requestNotificationPermission();
+      }
+
+      // Iniciar el servicio de notificaciones
+      startNotificationService(() => allTasks);
+
+      // Detener el servicio al desmontar
+      return () => {
+        stopNotificationService();
+      };
+    }, [allTasks]);
 
     const selectedList = lists.find(l => l.id === selectedListId);
     const pageTitle = selectedListId === null 

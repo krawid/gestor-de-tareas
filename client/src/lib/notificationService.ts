@@ -73,6 +73,10 @@ function showTaskNotification(task: Task): void {
  * @param tasks Lista de tareas a verificar
  */
 export function checkTasksForNotifications(tasks: Task[]): void {
+  if (!("Notification" in window)) {
+    return;
+  }
+
   if (Notification.permission !== "granted") {
     return;
   }
@@ -109,6 +113,11 @@ let checkInterval: number | null = null;
  * @param getTasks Función que devuelve la lista de tareas
  */
 export function startNotificationService(getTasks: () => Task[]): void {
+  // Verificar si el navegador soporta notificaciones
+  if (!("Notification" in window)) {
+    return;
+  }
+
   // Si ya está corriendo, no iniciar de nuevo
   if (checkInterval !== null) {
     return;
