@@ -8,6 +8,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarFooter,
+  SidebarHeader,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,15 +16,18 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { List as ListType, Task } from "@shared/schema";
+import type { TaskFilterType } from "@/components/task-filter";
 import { cn } from "@/lib/utils";
 
 interface AppSidebarProps {
   selectedListId: string | null;
   onListSelect: (listId: string | null) => void;
   onAddList: () => void;
+  taskFilter: TaskFilterType;
+  onTaskFilterChange: (filter: TaskFilterType) => void;
 }
 
-export function AppSidebar({ selectedListId, onListSelect, onAddList }: AppSidebarProps) {
+export function AppSidebar({ selectedListId, onListSelect, onAddList, taskFilter, onTaskFilterChange }: AppSidebarProps) {
   const { toast } = useToast();
   const { data: lists = [] } = useQuery<ListType[]>({
     queryKey: ["/api/lists"],
@@ -75,6 +79,11 @@ export function AppSidebar({ selectedListId, onListSelect, onAddList }: AppSideb
 
   return (
     <Sidebar>
+      <SidebarHeader>
+        <h1 className="text-lg font-semibold px-2 py-4">
+          Gestor de tareas
+        </h1>
+      </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           <h2 className={cn(
@@ -87,9 +96,12 @@ export function AppSidebar({ selectedListId, onListSelect, onAddList }: AppSideb
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton
-                  onClick={() => onListSelect(null)}
-                  isActive={selectedListId === null}
-                  aria-current={selectedListId === null ? "page" : undefined}
+                  onClick={() => {
+                    onListSelect(null);
+                    onTaskFilterChange("all");
+                  }}
+                  isActive={selectedListId === null && taskFilter === "all"}
+                  aria-current={selectedListId === null && taskFilter === "all" ? "page" : undefined}
                   data-testid="button-all-tasks"
                 >
                   <List className="h-4 w-4" />
@@ -97,6 +109,44 @@ export function AppSidebar({ selectedListId, onListSelect, onAddList }: AppSideb
                   {getTaskCount(null) > 0 && (
                     <Badge variant="secondary" className="ml-auto" data-testid="badge-count-all">
                       {getTaskCount(null)}
+                    </Badge>
+                  )}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => {
+                    onListSelect(null);
+                    onTaskFilterChange("pending");
+                  }}
+                  isActive={selectedListId === null && taskFilter === "pending"}
+                  aria-current={selectedListId === null && taskFilter === "pending" ? "page" : undefined}
+                  data-testid="button-pending-tasks"
+                >
+                  <Circle className="h-4 w-4" />
+                  <span>Pendientes</span>
+                  {tasks.filter(t => !t.completed).length > 0 && (
+                    <Badge variant="secondary" className="ml-auto" data-testid="badge-count-pending">
+                      {tasks.filter(t => !t.completed).length}
+                    </Badge>
+                  )}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => {
+                    onListSelect(null);
+                    onTaskFilterChange("completed");
+                  }}
+                  isActive={selectedListId === null && taskFilter === "completed"}
+                  aria-current={selectedListId === null && taskFilter === "completed" ? "page" : undefined}
+                  data-testid="button-completed-tasks"
+                >
+                  <CheckCircle2 className="h-4 w-4" />
+                  <span>Completadas</span>
+                  {tasks.filter(t => t.completed).length > 0 && (
+                    <Badge variant="secondary" className="ml-auto" data-testid="badge-count-completed">
+                      {tasks.filter(t => t.completed).length}
                     </Badge>
                   )}
                 </SidebarMenuButton>

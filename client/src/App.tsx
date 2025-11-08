@@ -7,7 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SearchInput } from "@/components/search-input";
-import { TaskFilter, TaskFilterType } from "@/components/task-filter";
+import { TaskFilterType } from "@/components/task-filter";
 import { KeyboardShortcutsHelp } from "@/components/keyboard-shortcuts-help";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { Button } from "@/components/ui/button";
@@ -55,6 +55,8 @@ export default function App() {
             selectedListId={selectedListId}
             onListSelect={setSelectedListId}
             onAddList={() => setIsAddListOpen(true)}
+            taskFilter={taskFilter}
+            onTaskFilterChange={setTaskFilter}
           />
           <SidebarInset>
             <header className="flex items-center gap-4 p-4 border-b min-h-[57px]">
@@ -63,7 +65,6 @@ export default function App() {
                 value={searchQuery} 
                 onChange={setSearchQuery} 
               />
-              <TaskFilter value={taskFilter} onChange={setTaskFilter} />
               <Button
                 size="icon"
                 variant="ghost"
