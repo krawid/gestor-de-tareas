@@ -170,6 +170,7 @@ function toast({ ...props }: Toast) {
 
 function useToast() {
   const [state, setState] = React.useState<State>(memoryState)
+  const [announcement, setAnnouncement] = React.useState<string>("")
 
   React.useEffect(() => {
     listeners.push(setState)
@@ -181,8 +182,22 @@ function useToast() {
     }
   }, [state])
 
+  // Update announcement when toasts change
+  React.useEffect(() => {
+    if (state.toasts.length > 0) {
+      const latestToast = state.toasts[0]
+      const message = [latestToast.title, latestToast.description]
+        .filter(Boolean)
+        .join(" - ")
+      setAnnouncement(message)
+    } else {
+      setAnnouncement("")
+    }
+  }, [state.toasts])
+
   return {
     ...state,
+    announcement,
     toast,
     dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
   }
