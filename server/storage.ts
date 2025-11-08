@@ -41,6 +41,7 @@ export class MemStorage implements IStorage {
       completed: insertTask.completed || false,
       priority: insertTask.priority || 0,
       listId: insertTask.listId || null,
+      dueDate: insertTask.dueDate || null,
     };
     this.tasks.set(id, task);
     return task;

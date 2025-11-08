@@ -1,7 +1,10 @@
 import { useState } from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Calendar, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { format, isPast, isToday } from "date-fns";
+import { es } from "date-fns/locale";
 import type { Task } from "@shared/schema";
 
 interface TaskItemProps {
@@ -26,6 +29,14 @@ const priorityLabels = {
 };
 
 export function TaskItem({ task, onToggle, onEdit, onDelete }: TaskItemProps) {
+  const dueDate = task.dueDate ? new Date(task.dueDate) : null;
+  const isOverdue = dueDate && !task.completed && isPast(dueDate) && !isToday(dueDate);
+  const isDueToday = dueDate && !task.completed && isToday(dueDate);
+
+  const formatDueDate = (date: Date) => {
+    return format(date, "d 'de' MMMM", { locale: es });
+  };
+
   return (
     <div
       className="group flex items-center gap-3 p-4 bg-card border border-card-border rounded-md hover-elevate transition-all"
@@ -62,9 +73,32 @@ export function TaskItem({ task, onToggle, onEdit, onDelete }: TaskItemProps) {
             {task.description}
           </p>
         )}
+        {dueDate && (
+          <div className="flex items-center gap-2 mt-1">
+            <span
+              className={`text-sm flex items-center gap-1 ${
+                isOverdue ? "text-red-600 dark:text-red-400" : isDueToday ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"
+              }`}
+              data-testid={`text-task-due-date-${task.id}`}
+            >
+              {isOverdue && <AlertCircle className="h-3 w-3" />}
+              <Calendar className="h-3 w-3" />
+              {formatDueDate(dueDate)}
+              {isOverdue && " (Vencida)"}
+              {isDueToday && " (Hoy)"}
+            </span>
+          </div>
+        )}
         {task.priority > 0 && (
           <span className="sr-only">
             Prioridad: {priorityLabels[task.priority as keyof typeof priorityLabels]}
+          </span>
+        )}
+        {dueDate && (
+          <span className="sr-only">
+            Fecha de vencimiento: {formatDueDate(dueDate)}
+            {isOverdue && ", tarea vencida"}
+            {isDueToday && ", vence hoy"}
           </span>
         )}
       </label>

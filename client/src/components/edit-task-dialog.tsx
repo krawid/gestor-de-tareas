@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -42,6 +43,7 @@ const editTaskSchema = z.object({
   description: z.string().optional(),
   priority: z.number().min(0).max(3),
   listId: z.string().nullable(),
+  dueDate: z.date().nullable(),
 });
 
 type EditTaskForm = z.infer<typeof editTaskSchema>;
@@ -58,6 +60,7 @@ export function EditTaskDialog({ task, open, onOpenChange, onSave }: EditTaskDia
       description: "",
       priority: 0,
       listId: null,
+      dueDate: null,
     },
   });
 
@@ -68,6 +71,7 @@ export function EditTaskDialog({ task, open, onOpenChange, onSave }: EditTaskDia
         description: task.description || "",
         priority: task.priority,
         listId: task.listId,
+        dueDate: task.dueDate ? new Date(task.dueDate) : null,
       });
     }
   }, [task, form]);
@@ -181,6 +185,41 @@ export function EditTaskDialog({ task, open, onOpenChange, onSave }: EditTaskDia
                       ))}
                     </SelectContent>
                   </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="dueDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel htmlFor="dueDate">Fecha de vencimiento</FormLabel>
+                  <div className="flex gap-2 items-center">
+                    <FormControl>
+                      <Input
+                        id="dueDate"
+                        type="date"
+                        value={field.value ? new Date(field.value).toISOString().split('T')[0] : ""}
+                        onChange={(e) => field.onChange(e.target.value ? new Date(e.target.value + 'T12:00:00') : null)}
+                        className="text-base"
+                        data-testid="input-edit-due-date"
+                      />
+                    </FormControl>
+                    {field.value && (
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => field.onChange(null)}
+                        aria-label="Limpiar fecha de vencimiento"
+                        data-testid="button-clear-edit-due-date"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}

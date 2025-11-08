@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, boolean, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, boolean, integer, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -16,13 +16,25 @@ export const tasks = pgTable("tasks", {
   completed: boolean("completed").notNull().default(false),
   priority: integer("priority").notNull().default(0),
   listId: varchar("list_id").references(() => lists.id),
+  dueDate: timestamp("due_date"),
 });
 
 export const insertListSchema = createInsertSchema(lists).omit({
   id: true,
 });
 
-export const insertTaskSchema = createInsertSchema(tasks).omit({
+export const insertTaskSchema = createInsertSchema(tasks, {
+  dueDate: z.union([z.string(), z.date(), z.null()]).transform((val) => {
+    if (val === null || val === undefined) return null;
+    if (typeof val === 'string') {
+      if (val.includes('T')) {
+        return new Date(val);
+      }
+      return new Date(val + 'T12:00:00');
+    }
+    return val;
+  }).optional(),
+}).omit({
   id: true,
 });
 
