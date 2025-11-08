@@ -78,7 +78,7 @@ export function AppSidebar({ selectedListId, onListSelect, onAddList, taskFilter
   };
 
   return (
-    <Sidebar>
+    <Sidebar collapsible="none">
       <SidebarHeader>
         <h1 className="text-lg font-semibold px-2 py-4">
           Gestor de tareas

@@ -16,7 +16,7 @@ Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante 
     - Tres botones: "Todas las tareas", "Pendientes", "Completadas"
     - Selector de filtros eliminado del header principal
   - **Correcciones para VoiceOver (iPhone)**:
-    - Añadido SidebarTrigger en header para acceso al sidebar en móviles
+    - Sidebar siempre visible (collapsible="none") en móvil y desktop para garantizar accesibilidad
     - Reemplazado confirm() nativo con AlertDialog de Radix UI para confirmación de eliminación
     - Eliminados aria-describedby innecesarios de DialogContent (mantenidos solo en formularios)
   - **Formularios modales**: 
