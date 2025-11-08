@@ -5,6 +5,16 @@ Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante 
 
 ## Recent Changes
 - **2025-11-08**: Refactorización mayor para mejorar accesibilidad y claridad
+  - **Jerarquía de encabezados**:
+    - h1 "Gestor de tareas" como encabezado principal en sidebar
+    - h2 "Mis Tareas" en sidebar (navegable con H/Shift+H en NVDA)
+    - h2 "Listas" en sidebar (navegable con H/Shift+H en NVDA)
+    - Vista "Todas las tareas": h2 "Tareas pendientes" y h2 "Tareas completadas" en área principal
+    - Vista filtrada o de lista: h2 contextual descriptivo en área principal
+  - **Filtros en sidebar**:
+    - Filtros movidos a sidebar bajo "Mis Tareas"
+    - Tres botones: "Todas las tareas", "Pendientes", "Completadas"
+    - Selector de filtros eliminado del header principal
   - **Formularios modales**: 
     - Añadir tarea ahora es un diálogo modal (evita mezcla con tareas existentes)
     - Selector de lista integrado en formularios de crear/editar tarea (select nativo)
@@ -15,10 +25,8 @@ Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante 
     - Región sr-only siempre presente para que NVDA la registre al cargar la página
     - Notificaciones descriptivas: "Tarea marcada como completada/pendiente" en lugar de mensaje genérico
     - aria-current="page" en botones de lista activos en sidebar
-    - Encabezados semánticos: "Mis Tareas" y "Listas" ahora son <h2> para navegación con lector
-    - Encabezado descriptivo que indica vista activa ("Mostrando todas las tareas" / "Mostrando tareas de la lista X")
+    - Jerarquía de encabezados coherente en todas las vistas
     - Sidebar siempre visible (toggle eliminado por no ser útil para lectores de pantalla)
-  - **Filtros de tareas**: Todas/Completadas/Pendientes con anuncios de estado
   - **Fechas de vencimiento**: Selector HTML5, indicadores visuales, manejo correcto de zona horaria
   - **Atajos de teclado**: N (nueva tarea), L (nueva lista), ? (ayuda), Escape (cerrar)
   - **Sistema de listas**: 
