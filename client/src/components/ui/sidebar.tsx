@@ -239,6 +239,7 @@ function Sidebar({
             : "group-data-[collapsible=icon]:w-[var(--sidebar-width-icon)] group-data-[side=left]:border-r group-data-[side=right]:border-l",
           className
         )}
+        aria-hidden={state === "collapsed"}
         {...props}
       >
         <div
