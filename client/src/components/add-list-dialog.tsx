@@ -117,17 +117,6 @@ export function AddListDialog({ open, onOpenChange, onAdd }: AddListDialogProps)
             />
 
             <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  form.reset();
-                  onOpenChange(false);
-                }}
-                data-testid="button-cancel-list"
-              >
-                Cancelar
-              </Button>
               <Button type="submit" data-testid="button-save-list">
                 Crear lista
               </Button>

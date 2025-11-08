@@ -138,12 +138,12 @@ const Home = forwardRef<HomeRef, HomeProps>(
       },
     });
 
-    const handleAddTask = (title: string, dueDate: Date | null) => {
+    const handleAddTask = (title: string, dueDate: Date | null, priority: number) => {
       createTaskMutation.mutate({
         title,
         description: null,
         completed: false,
-        priority: 0,
+        priority: priority,
         listId: selectedListId,
         dueDate: dueDate,
       });
