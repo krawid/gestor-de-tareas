@@ -258,7 +258,8 @@ function SidebarTrigger({
   onClick,
   ...props
 }: React.ComponentProps<typeof Button>) {
-  const { toggleSidebar } = useSidebar()
+  const { toggleSidebar, state } = useSidebar()
+  const isExpanded = state === "expanded"
 
   return (
     <Button
@@ -271,10 +272,11 @@ function SidebarTrigger({
         onClick?.(event)
         toggleSidebar()
       }}
+      aria-expanded={isExpanded}
+      aria-label={isExpanded ? "Ocultar barra lateral" : "Mostrar barra lateral"}
       {...props}
     >
       <PanelLeftIcon />
-      <span className="sr-only">Toggle Sidebar</span>
     </Button>
   )
 }
