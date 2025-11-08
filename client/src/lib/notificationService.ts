@@ -74,17 +74,14 @@ function showTaskNotification(task: Task): void {
  */
 export function checkTasksForNotifications(tasks: Task[]): void {
   if (!("Notification" in window)) {
-    console.log("Notificaciones no soportadas");
     return;
   }
 
   if (Notification.permission !== "granted") {
-    console.log("Permisos de notificación no otorgados. Estado:", Notification.permission);
     return;
   }
 
   const now = new Date();
-  console.log("Verificando notificaciones. Hora actual:", now.toLocaleString());
 
   tasks.forEach((task) => {
     // Ignorar tareas completadas
@@ -100,24 +97,10 @@ export function checkTasksForNotifications(tasks: Task[]): void {
     const dueDate = new Date(task.dueDate);
     const reminderTime = new Date(dueDate.getTime() - task.reminderMinutes * 60 * 1000);
 
-    console.log(`Tarea: "${task.title}"`, {
-      dueDate: dueDate.toLocaleString(),
-      reminderMinutes: task.reminderMinutes,
-      reminderTime: reminderTime.toLocaleString(),
-      now: now.toLocaleString(),
-    });
-
     // Si ya pasó el tiempo del recordatorio y estamos dentro de una ventana de 5 minutos
     const timeDiff = now.getTime() - reminderTime.getTime();
-    console.log(`  Diferencia de tiempo: ${timeDiff}ms (${Math.round(timeDiff / 1000)}s)`);
-    
     if (timeDiff >= 0 && timeDiff <= 5 * 60 * 1000) {
-      console.log(`  ¡Mostrando notificación para "${task.title}"!`);
       showTaskNotification(task);
-    } else if (timeDiff < 0) {
-      console.log(`  Recordatorio en ${Math.round(-timeDiff / 1000)}s`);
-    } else {
-      console.log(`  Recordatorio ya pasó hace ${Math.round(timeDiff / 1000)}s`);
     }
   });
 }

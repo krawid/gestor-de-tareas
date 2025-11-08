@@ -17,7 +17,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Plus, Bell } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { TaskFilterType } from "@/components/task-filter";
 import type { Task, InsertTask, InsertList, List } from "@shared/schema";
@@ -46,6 +47,7 @@ const Home = forwardRef<HomeRef, HomeProps>(
   ({ selectedListId, searchQuery, taskFilter, onAddListClick, isAddListOpen, onAddListOpenChange, isAddTaskOpen, onAddTaskOpenChange }, ref) => {
     const [editingTask, setEditingTask] = useState<Task | null>(null);
     const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
+    const [showNotificationBanner, setShowNotificationBanner] = useState(false);
     const { toast } = useToast();
 
     useImperativeHandle(ref, () => ({
@@ -66,13 +68,31 @@ const Home = forwardRef<HomeRef, HomeProps>(
     useEffect(() => {
       // Verificar si el navegador soporta notificaciones
       if (!("Notification" in window)) {
+        setShowNotificationBanner(false);
         return;
       }
 
+      // Verificar si hay tareas con recordatorios
+      const hasReminders = allTasks.some(task => 
+        !task.completed && 
+        task.reminderMinutes !== null && 
+        task.reminderMinutes !== undefined
+      );
+
+      // Mostrar banner si hay recordatorios pero no hay permisos
+      if (hasReminders && Notification.permission !== "granted") {
+        setShowNotificationBanner(true);
+      } else {
+        setShowNotificationBanner(false);
+      }
+
       // Solicitar permisos si hay tareas con recordatorios
-      const hasReminders = allTasks.some(task => task.reminderMinutes !== null && task.reminderMinutes !== undefined);
       if (hasReminders && Notification.permission === "default") {
-        requestNotificationPermission();
+        requestNotificationPermission().then(granted => {
+          if (granted) {
+            setShowNotificationBanner(false);
+          }
+        });
       }
 
       // Iniciar el servicio de notificaciones
@@ -261,6 +281,34 @@ const Home = forwardRef<HomeRef, HomeProps>(
       <div className="flex flex-col h-full">
         <div className="flex-1 overflow-auto">
           <div className="max-w-4xl mx-auto p-6 space-y-6">
+            {showNotificationBanner && (
+              <Alert>
+                <Bell className="h-4 w-4" />
+                <AlertTitle>Permisos de notificación necesarios</AlertTitle>
+                <AlertDescription>
+                  Tienes tareas con recordatorios, pero las notificaciones están bloqueadas. 
+                  {" "}
+                  {Notification.permission === "denied" ? (
+                    "Para recibir recordatorios, permite las notificaciones en la configuración de tu navegador."
+                  ) : (
+                    <button
+                      className="text-primary underline hover:no-underline cursor-pointer"
+                      onClick={() => {
+                        requestNotificationPermission().then(granted => {
+                          if (granted) {
+                            setShowNotificationBanner(false);
+                          }
+                        });
+                      }}
+                      data-testid="button-request-notification-permission"
+                    >
+                      Haz clic aquí para permitir notificaciones
+                    </button>
+                  )}
+                </AlertDescription>
+              </Alert>
+            )}
+            
             <div className="flex items-center justify-between mb-6">
               {!showSeparatedSections && contextTitle && (
                 <h2 className="text-xl font-semibold" data-testid="text-context-title">
