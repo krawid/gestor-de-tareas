@@ -52,13 +52,10 @@ export function AddTaskDialog({ open, onOpenChange, onAdd, lists }: AddTaskDialo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent data-testid="dialog-add-task" aria-describedby="add-task-description">
+      <DialogContent data-testid="dialog-add-task">
         <DialogHeader>
           <DialogTitle>Nueva tarea</DialogTitle>
         </DialogHeader>
-        <p id="add-task-description" className="sr-only">
-          Crea una nueva tarea con título, descripción, prioridad y fecha de vencimiento
-        </p>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">

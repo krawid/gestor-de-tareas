@@ -52,13 +52,10 @@ export function AddListDialog({ open, onOpenChange, onAdd }: AddListDialogProps)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent data-testid="dialog-add-list" aria-describedby="add-list-description">
+      <DialogContent data-testid="dialog-add-list">
         <DialogHeader>
           <DialogTitle>Nueva lista</DialogTitle>
         </DialogHeader>
-        <p id="add-list-description" className="sr-only">
-          Crea una nueva lista para organizar tus tareas
-        </p>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">

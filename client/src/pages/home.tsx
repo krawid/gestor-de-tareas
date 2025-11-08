@@ -7,6 +7,16 @@ import { TaskItem } from "@/components/task-item";
 import { EditTaskDialog } from "@/components/edit-task-dialog";
 import { AddListDialog } from "@/components/add-list-dialog";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { TaskFilterType } from "@/components/task-filter";
@@ -30,6 +40,7 @@ export interface HomeRef {
 const Home = forwardRef<HomeRef, HomeProps>(
   ({ selectedListId, searchQuery, taskFilter, onAddListClick, isAddListOpen, onAddListOpenChange, isAddTaskOpen, onAddTaskOpenChange }, ref) => {
     const [editingTask, setEditingTask] = useState<Task | null>(null);
+    const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
     const { toast } = useToast();
 
     useImperativeHandle(ref, () => ({
@@ -180,8 +191,13 @@ const Home = forwardRef<HomeRef, HomeProps>(
     };
 
     const handleDeleteTask = (id: string) => {
-      if (confirm("¿Estás seguro de que deseas eliminar esta tarea?")) {
-        deleteTaskMutation.mutate(id);
+      setTaskToDelete(id);
+    };
+
+    const confirmDeleteTask = () => {
+      if (taskToDelete) {
+        deleteTaskMutation.mutate(taskToDelete);
+        setTaskToDelete(null);
       }
     };
 
@@ -310,6 +326,26 @@ const Home = forwardRef<HomeRef, HomeProps>(
           onOpenChange={onAddListOpenChange}
           onAdd={handleAddList}
         />
+
+        <AlertDialog open={taskToDelete !== null} onOpenChange={(open) => !open && setTaskToDelete(null)}>
+          <AlertDialogContent data-testid="alert-delete-task">
+            <AlertDialogHeader>
+              <AlertDialogTitle>¿Eliminar tarea?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Esta acción no se puede deshacer. La tarea será eliminada permanentemente.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel data-testid="button-cancel-delete">Cancelar</AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={confirmDeleteTask}
+                data-testid="button-confirm-delete"
+              >
+                Eliminar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     );
   }

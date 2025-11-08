@@ -78,13 +78,10 @@ export function EditTaskDialog({ task, open, onOpenChange, onSave }: EditTaskDia
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent data-testid="dialog-edit-task" aria-describedby="edit-task-description">
+      <DialogContent data-testid="dialog-edit-task">
         <DialogHeader>
           <DialogTitle>Editar tarea</DialogTitle>
         </DialogHeader>
-        <p id="edit-task-description" className="sr-only">
-          Modifica los detalles de la tarea seleccionada
-        </p>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
