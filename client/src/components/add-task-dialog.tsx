@@ -40,6 +40,7 @@ export function AddTaskDialog({ open, onOpenChange, onAdd, lists }: AddTaskDialo
       priority: 0,
       listId: null,
       dueDate: null,
+      reminderMinutes: null,
     },
   });
 
@@ -214,6 +215,42 @@ export function AddTaskDialog({ open, onOpenChange, onAdd, lists }: AddTaskDialo
                 }}
               />
             </div>
+
+            <FormField
+              control={form.control}
+              name="reminderMinutes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel htmlFor="task-reminder">Recordatorio</FormLabel>
+                  <FormControl>
+                    <select
+                      id="task-reminder"
+                      {...field}
+                      value={field.value ?? ""}
+                      onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
+                      className="w-full text-base border border-input rounded-md px-3 py-2 bg-background"
+                      data-testid="select-task-reminder"
+                      disabled={!dueDateValue}
+                    >
+                      <option value="">Sin recordatorio</option>
+                      <option value="15">15 minutos antes</option>
+                      <option value="30">30 minutos antes</option>
+                      <option value="60">1 hora antes</option>
+                      <option value="180">3 horas antes</option>
+                      <option value="360">6 horas antes</option>
+                      <option value="720">12 horas antes</option>
+                      <option value="1440">24 horas antes</option>
+                    </select>
+                  </FormControl>
+                  {!dueDateValue && (
+                    <p className="text-sm text-muted-foreground">
+                      Establece una fecha de vencimiento para activar recordatorios
+                    </p>
+                  )}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <DialogFooter>
               <Button type="submit" data-testid="button-save-task">
