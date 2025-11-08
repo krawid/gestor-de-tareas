@@ -164,6 +164,7 @@ export function AddTaskDialog({ open, onOpenChange, onAdd, lists }: AddTaskDialo
                 name="dueDate"
                 render={({ field }) => {
                   const [isInteracting, setIsInteracting] = useState(false);
+                  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
                   const currentValue = field.value
                     ? field.value instanceof Date
                       ? field.value.toISOString().split("T")[0]
@@ -179,12 +180,11 @@ export function AddTaskDialog({ open, onOpenChange, onAdd, lists }: AddTaskDialo
                             id="task-due-date"
                             type="date"
                             value={currentValue}
-                            readOnly={!isInteracting}
+                            readOnly={isIOS && !isInteracting}
                             onChange={() => {}}
-                            onFocus={() => setIsInteracting(false)}
-                            onClick={() => setIsInteracting(true)}
+                            onClick={() => isIOS && setIsInteracting(true)}
                             onBlur={(e) => {
-                              setIsInteracting(false);
+                              if (isIOS) setIsInteracting(false);
                               const value = e.target.value;
                               // Solo actualizar si el valor realmente cambió
                               if (value !== currentValue) {

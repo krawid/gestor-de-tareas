@@ -184,6 +184,7 @@ export function EditTaskDialog({ task, open, onOpenChange, onSave }: EditTaskDia
               name="dueDate"
               render={({ field }) => {
                 const [isInteracting, setIsInteracting] = useState(false);
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
                 const currentValue = field.value ? new Date(field.value).toISOString().split('T')[0] : "";
 
                 return (
@@ -195,12 +196,11 @@ export function EditTaskDialog({ task, open, onOpenChange, onSave }: EditTaskDia
                           id="dueDate"
                           type="date"
                           value={currentValue}
-                          readOnly={!isInteracting}
+                          readOnly={isIOS && !isInteracting}
                           onChange={() => {}}
-                          onFocus={() => setIsInteracting(false)}
-                          onClick={() => setIsInteracting(true)}
+                          onClick={() => isIOS && setIsInteracting(true)}
                           onBlur={(e) => {
-                            setIsInteracting(false);
+                            if (isIOS) setIsInteracting(false);
                             const value = e.target.value;
                             // Solo actualizar si el valor realmente cambió
                             if (value !== currentValue) {
