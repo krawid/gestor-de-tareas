@@ -3,6 +3,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { AddTaskDialog } from "@/components/add-task-dialog";
 import { TaskList } from "@/components/task-list";
+import { TaskItem } from "@/components/task-item";
 import { EditTaskDialog } from "@/components/edit-task-dialog";
 import { AddListDialog } from "@/components/add-list-dialog";
 import { Button } from "@/components/ui/button";
@@ -196,29 +197,97 @@ const Home = forwardRef<HomeRef, HomeProps>(
       );
     }
 
+    // Vista especial: "Todas las tareas" muestra secciones separadas
+    const showSeparatedSections = selectedListId === null && taskFilter === "all";
+    const pendingTasks = filteredTasks.filter(t => !t.completed);
+    const completedTasks = filteredTasks.filter(t => t.completed);
+
+    // Determinar el título contextual para vistas filtradas
+    let contextTitle = "";
+    if (!showSeparatedSections) {
+      if (selectedListId !== null) {
+        contextTitle = `Tareas de la lista ${selectedList?.name || ""}`;
+      } else if (taskFilter === "pending") {
+        contextTitle = "Tareas pendientes";
+      } else if (taskFilter === "completed") {
+        contextTitle = "Tareas completadas";
+      }
+    }
+
     return (
       <div className="flex flex-col h-full">
         <div className="flex-1 overflow-auto">
           <div className="max-w-4xl mx-auto p-6 space-y-6">
             <div className="flex items-center justify-between mb-6">
-              <h1 className="text-2xl font-semibold" data-testid="text-page-title">
-                {pageTitle}
-              </h1>
+              {!showSeparatedSections && contextTitle && (
+                <h2 className="text-xl font-semibold" data-testid="text-context-title">
+                  {contextTitle}
+                </h2>
+              )}
               <Button
                 onClick={() => onAddTaskOpenChange(true)}
                 data-testid="button-add-task"
+                className={showSeparatedSections ? "ml-auto" : ""}
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Añadir tarea
               </Button>
             </div>
 
-            <TaskList
-              tasks={filteredTasks}
-              onToggle={handleToggleTask}
-              onEdit={handleEditTask}
-              onDelete={handleDeleteTask}
-            />
+            {showSeparatedSections ? (
+              <div className="space-y-8">
+                <section>
+                  <h2 className="text-xl font-semibold mb-4" data-testid="heading-pending-tasks">
+                    Tareas pendientes
+                  </h2>
+                  {pendingTasks.length === 0 ? (
+                    <p className="text-muted-foreground text-sm">No hay tareas pendientes</p>
+                  ) : (
+                    <ul className="space-y-2" data-testid="list-pending-tasks">
+                      {pendingTasks.map((task) => (
+                        <li key={task.id}>
+                          <TaskItem
+                            task={task}
+                            onToggle={handleToggleTask}
+                            onEdit={handleEditTask}
+                            onDelete={handleDeleteTask}
+                          />
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </section>
+
+                <section>
+                  <h2 className="text-xl font-semibold mb-4" data-testid="heading-completed-tasks">
+                    Tareas completadas
+                  </h2>
+                  {completedTasks.length === 0 ? (
+                    <p className="text-muted-foreground text-sm">No hay tareas completadas</p>
+                  ) : (
+                    <ul className="space-y-2" data-testid="list-completed-tasks">
+                      {completedTasks.map((task) => (
+                        <li key={task.id}>
+                          <TaskItem
+                            task={task}
+                            onToggle={handleToggleTask}
+                            onEdit={handleEditTask}
+                            onDelete={handleDeleteTask}
+                          />
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </section>
+              </div>
+            ) : (
+              <TaskList
+                tasks={filteredTasks}
+                onToggle={handleToggleTask}
+                onEdit={handleEditTask}
+                onDelete={handleDeleteTask}
+              />
+            )}
           </div>
         </div>
 
