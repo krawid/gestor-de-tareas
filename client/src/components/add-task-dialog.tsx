@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertTaskSchema } from "@shared/schema";
@@ -161,52 +162,56 @@ export function AddTaskDialog({ open, onOpenChange, onAdd, lists }: AddTaskDialo
               <FormField
                 control={form.control}
                 name="dueDate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel htmlFor="task-due-date">Fecha de vencimiento</FormLabel>
-                    <div className="flex gap-2">
-                      <FormControl>
-                        <Input
-                          id="task-due-date"
-                          type="date"
-                          value={
-                            field.value
-                              ? field.value instanceof Date
-                                ? field.value.toISOString().split("T")[0]
-                                : ""
-                              : ""
-                          }
-                          onChange={() => {}}
-                          onClick={(e) => {
-                            // Forzar blur/focus solo cuando hay click real (no solo navegación con VoiceOver)
-                            const target = e.target as HTMLInputElement;
-                            target.blur();
-                            setTimeout(() => target.focus(), 10);
-                          }}
-                          onBlur={(e) => {
-                            const value = e.target.value;
-                            field.onChange(value ? value : null);
-                          }}
-                          className="text-base"
-                          data-testid="input-task-due-date"
-                        />
-                      </FormControl>
-                      {dueDateValue && (
-                        <Button
-                          type="button"
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => field.onChange(null)}
-                          aria-label="Limpiar fecha de vencimiento"
-                          data-testid="button-clear-due-date"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={({ field }) => {
+                  const [isInteracting, setIsInteracting] = useState(false);
+                  const currentValue = field.value
+                    ? field.value instanceof Date
+                      ? field.value.toISOString().split("T")[0]
+                      : ""
+                    : "";
+
+                  return (
+                    <FormItem>
+                      <FormLabel htmlFor="task-due-date">Fecha de vencimiento</FormLabel>
+                      <div className="flex gap-2">
+                        <FormControl>
+                          <Input
+                            id="task-due-date"
+                            type="date"
+                            value={currentValue}
+                            readOnly={!isInteracting}
+                            onChange={() => {}}
+                            onFocus={() => setIsInteracting(false)}
+                            onClick={() => setIsInteracting(true)}
+                            onBlur={(e) => {
+                              setIsInteracting(false);
+                              const value = e.target.value;
+                              // Solo actualizar si el valor realmente cambió
+                              if (value !== currentValue) {
+                                field.onChange(value ? value : null);
+                              }
+                            }}
+                            className="text-base"
+                            data-testid="input-task-due-date"
+                          />
+                        </FormControl>
+                        {dueDateValue && (
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => field.onChange(null)}
+                            aria-label="Limpiar fecha de vencimiento"
+                            data-testid="button-clear-due-date"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
             </div>
 

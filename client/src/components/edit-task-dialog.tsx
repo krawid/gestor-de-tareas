@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -182,43 +182,52 @@ export function EditTaskDialog({ task, open, onOpenChange, onSave }: EditTaskDia
             <FormField
               control={form.control}
               name="dueDate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel htmlFor="dueDate">Fecha de vencimiento</FormLabel>
-                  <div className="flex gap-2 items-center">
-                    <FormControl>
-                      <Input
-                        id="dueDate"
-                        type="date"
-                        value={field.value ? new Date(field.value).toISOString().split('T')[0] : ""}
-                        onChange={() => {}}
-                        onClick={(e) => {
-                          // Forzar blur/focus solo cuando hay click real (no solo navegación con VoiceOver)
-                          const target = e.target as HTMLInputElement;
-                          target.blur();
-                          setTimeout(() => target.focus(), 10);
-                        }}
-                        onBlur={(e) => field.onChange(e.target.value ? new Date(e.target.value + 'T12:00:00') : null)}
-                        className="text-base"
-                        data-testid="input-edit-due-date"
-                      />
-                    </FormControl>
-                    {field.value && (
-                      <Button
-                        type="button"
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => field.onChange(null)}
-                        aria-label="Limpiar fecha de vencimiento"
-                        data-testid="button-clear-edit-due-date"
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
+              render={({ field }) => {
+                const [isInteracting, setIsInteracting] = useState(false);
+                const currentValue = field.value ? new Date(field.value).toISOString().split('T')[0] : "";
+
+                return (
+                  <FormItem>
+                    <FormLabel htmlFor="dueDate">Fecha de vencimiento</FormLabel>
+                    <div className="flex gap-2 items-center">
+                      <FormControl>
+                        <Input
+                          id="dueDate"
+                          type="date"
+                          value={currentValue}
+                          readOnly={!isInteracting}
+                          onChange={() => {}}
+                          onFocus={() => setIsInteracting(false)}
+                          onClick={() => setIsInteracting(true)}
+                          onBlur={(e) => {
+                            setIsInteracting(false);
+                            const value = e.target.value;
+                            // Solo actualizar si el valor realmente cambió
+                            if (value !== currentValue) {
+                              field.onChange(value ? new Date(value + 'T12:00:00') : null);
+                            }
+                          }}
+                          className="text-base"
+                          data-testid="input-edit-due-date"
+                        />
+                      </FormControl>
+                      {field.value && (
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => field.onChange(null)}
+                          aria-label="Limpiar fecha de vencimiento"
+                          data-testid="button-clear-edit-due-date"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
             />
 
             <DialogFooter>
