@@ -37,6 +37,7 @@ const editTaskSchema = z.object({
   priority: z.number().min(0).max(3),
   listId: z.string().nullable(),
   dueDate: z.date().nullable(),
+  reminderMinutes: z.number().nullable(),
 });
 
 type EditTaskForm = z.infer<typeof editTaskSchema>;
@@ -54,6 +55,7 @@ export function EditTaskDialog({ task, open, onOpenChange, onSave }: EditTaskDia
       priority: 0,
       listId: null,
       dueDate: null,
+      reminderMinutes: null,
     },
   });
 
@@ -65,6 +67,7 @@ export function EditTaskDialog({ task, open, onOpenChange, onSave }: EditTaskDia
         priority: task.priority,
         listId: task.listId,
         dueDate: task.dueDate ? new Date(task.dueDate) : null,
+        reminderMinutes: task.reminderMinutes,
       });
     }
   }, [task, form]);
@@ -224,6 +227,45 @@ export function EditTaskDialog({ task, open, onOpenChange, onSave }: EditTaskDia
                         </Button>
                       )}
                     </div>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
+            />
+
+            <FormField
+              control={form.control}
+              name="reminderMinutes"
+              render={({ field }) => {
+                const dueDateValue = form.watch("dueDate");
+                return (
+                  <FormItem>
+                    <FormLabel htmlFor="edit-reminder">Recordatorio</FormLabel>
+                    <FormControl>
+                      <select
+                        id="edit-reminder"
+                        {...field}
+                        value={field.value ?? ""}
+                        onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
+                        className="w-full text-base border border-input rounded-md px-3 py-2 bg-background"
+                        data-testid="select-edit-reminder"
+                        disabled={!dueDateValue}
+                      >
+                        <option value="">Sin recordatorio</option>
+                        <option value="15">15 minutos antes</option>
+                        <option value="30">30 minutos antes</option>
+                        <option value="60">1 hora antes</option>
+                        <option value="180">3 horas antes</option>
+                        <option value="360">6 horas antes</option>
+                        <option value="720">12 horas antes</option>
+                        <option value="1440">24 horas antes</option>
+                      </select>
+                    </FormControl>
+                    {!dueDateValue && (
+                      <p className="text-sm text-muted-foreground">
+                        Establece una fecha de vencimiento para activar recordatorios
+                      </p>
+                    )}
                     <FormMessage />
                   </FormItem>
                 );
