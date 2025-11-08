@@ -4,15 +4,24 @@
 Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante HTML semántico. Diseñada para ser completamente accesible con lectores de pantalla y navegación por teclado, sin uso excesivo de ARIA.
 
 ## Recent Changes
-- **2025-11-08 (tarde)**: Sistema de recordatorios para tareas
-  - **Campo reminderMinutes**: Nuevo campo en schema de tareas (entero nullable, minutos antes de dueDate)
-  - **Selector de recordatorio**: Añadido en formularios de crear/editar tarea con opciones: sin recordatorio, 15min, 30min, 1h, 3h, 6h, 12h, 24h antes
-  - **Servicio de notificaciones**: Implementado usando Web Notifications API
+- **2025-11-08 (tarde)**: Mejoras de accesibilidad en selectores de fecha/hora
+  - **Campos separados**: Separación de datetime-local en dos inputs independientes para VoiceOver
+    - Input type="date" etiquetado como "Fecha de vencimiento"
+    - Input type="time" etiquetado como "Hora de vencimiento" (solo visible cuando hay fecha)
+    - Mensaje explicativo: "Opcional. Si no especificas hora, será medianoche (00:00)"
+  - **Implementación técnica**:
+    - Valores derivados directamente de field.value (sin estado local desincronizado)
+    - Formateo manual con getFullYear()/getMonth()+1/getDate() (sin conversión UTC)
+    - Construcción de Date con new Date(year, month-1, day, hours, minutes) en zona horaria local
+    - Garantiza sincronización correcta después de form.reset() y entre diferentes tareas
+  - **Sistema de recordatorios**: Implementado usando Web Notifications API
+    - Campo reminderMinutes en schema de tareas (entero nullable, minutos antes de dueDate)
+    - Selector de recordatorio: sin recordatorio, 15min, 30min, 1h, 3h, 6h, 12h, 24h antes
     - Verifica tareas cada minuto para mostrar notificaciones en el momento apropiado
     - Deduplica notificaciones para evitar repeticiones
     - Solicita permisos automáticamente cuando hay tareas con recordatorios
     - Degrada gracefully en navegadores sin soporte para Notifications API
-  - **Accesibilidad**: Selector de recordatorio deshabilitado si no hay fecha de vencimiento, con mensaje explicativo
+    - Selector deshabilitado si no hay fecha de vencimiento, con mensaje explicativo
 - **2025-11-08 (mañana)**: Refactorización mayor para mejorar accesibilidad y claridad
   - **Jerarquía de encabezados**:
     - h1 "Gestor de tareas" como encabezado principal en sidebar
