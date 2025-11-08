@@ -48,6 +48,7 @@ export function AppSidebar({ selectedListId, onListSelect, onAddList }: AppSideb
                 <SidebarMenuButton
                   onClick={() => onListSelect(null)}
                   isActive={selectedListId === null}
+                  aria-current={selectedListId === null ? "page" : undefined}
                   data-testid="button-all-tasks"
                 >
                   <List className="h-4 w-4" />
@@ -72,6 +73,7 @@ export function AppSidebar({ selectedListId, onListSelect, onAddList }: AppSideb
                   <SidebarMenuButton
                     onClick={() => onListSelect(list.id)}
                     isActive={selectedListId === list.id}
+                    aria-current={selectedListId === list.id ? "page" : undefined}
                     data-testid={`button-list-${list.id}`}
                   >
                     <Circle

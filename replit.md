@@ -4,19 +4,23 @@
 Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante HTML semántico. Diseñada para ser completamente accesible con lectores de pantalla y navegación por teclado, sin uso excesivo de ARIA.
 
 ## Recent Changes
-- **2025-11-08**: Implementación completa del gestor de tareas accesible con todas las características avanzadas
-  - **MVP Inicial**: Esquema de datos, backend API REST, sidebar, componentes de tareas, formularios accesibles, prioridades, búsqueda global
-  - **Filtros de tareas**: Todas/Completadas/Pendientes con anuncios de estado para lectores de pantalla
-  - **Fechas de vencimiento**: Selector de fecha HTML5, indicadores visuales (rojo=vencido, ámbar=hoy, gris=futuro), corrección de bug de zona horaria
-  - **Atajos de teclado**: N (nueva tarea), L (nueva lista), ? (ayuda), Escape (cerrar), modal de ayuda accesible
-  - **Mejoras de UX**: 
-    - Botón "+ Añadir tarea" que revela el formulario (interfaz minimalista)
-    - Selector de prioridad integrado en formularios de añadir/editar tarea
-    - Diálogos simplificados (solo botón X para cerrar)
+- **2025-11-08**: Refactorización mayor para mejorar accesibilidad y claridad
+  - **Formularios modales**: 
+    - Añadir tarea ahora es un diálogo modal (evita mezcla con tareas existentes)
+    - Selector de lista integrado en formularios de crear/editar tarea (select nativo)
+    - Asignación explícita de lista en lugar de automática por contexto
+  - **Mejoras de accesibilidad**:
+    - Toast notifications solo se renderizan cuando hay notificaciones activas
+    - aria-current="page" en botones de lista activos en sidebar
+    - Encabezado descriptivo que indica vista activa ("Mostrando todas las tareas" / "Mostrando tareas de la lista X")
     - Sidebar siempre visible (toggle eliminado por no ser útil para lectores de pantalla)
-  - Navegación completa por teclado con group-focus-within
-  - Diseño limpio con fuente Inter y contraste WCAG AA
-  - Todas las pruebas end-to-end pasadas exitosamente
+  - **Filtros de tareas**: Todas/Completadas/Pendientes con anuncios de estado
+  - **Fechas de vencimiento**: Selector HTML5, indicadores visuales, manejo correcto de zona horaria
+  - **Atajos de teclado**: N (nueva tarea), L (nueva lista), ? (ayuda), Escape (cerrar)
+  - **Sistema de listas**: 
+    - Listas puramente para filtrar vista (no auto-asignan tareas)
+    - Selector "Asignar a lista" en formularios con opción "Sin lista"
+    - Selectores nativos HTML en lugar de componentes custom
 
 ## Architecture
 
@@ -42,14 +46,24 @@ Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante 
 - **Navegación**: Completa por teclado sin mouse
 
 ## Key Features
-- Crear, editar, eliminar tareas con formularios accesibles
-- Organizar tareas en listas personalizables con colores
-- Sistema de prioridades (ninguna, baja, media, alta) con indicadores visuales
-- Marcar tareas como completadas/pendientes
-- **Filtros**: Mostrar todas/completadas/pendientes
+- **Gestión de tareas**:
+  - Crear tareas mediante diálogo modal con campos: título, descripción, lista, prioridad, fecha
+  - Editar y eliminar tareas existentes
+  - Marcar tareas como completadas/pendientes
+  - Sistema de prioridades (ninguna, baja, media, alta)
+- **Listas personalizables**:
+  - Crear listas con nombre y color
+  - Filtrar vista por lista (sidebar)
+  - Asignar tareas a listas explícitamente en formularios
+  - Opción "Sin lista" disponible
+- **Filtros y búsqueda**:
+  - Filtros: Todas/Completadas/Pendientes
+  - Búsqueda global en tiempo real por título y descripción
+  - Encabezado descriptivo indica vista activa
 - **Fechas de vencimiento**: Con indicadores de estado (vencido, hoy, futuro)
-- **Búsqueda global** en tiempo real
-- **Atajos de teclado**: N, L, ?, Escape con ayuda visual
-- Navegación completa por teclado (Tab, Enter, Space, Escape)
-- Completamente accesible con lectores de pantalla
-- HTML semántico, uso mínimo de ARIA
+- **Atajos de teclado**: N (nueva tarea), L (nueva lista), ? (ayuda), Escape (cerrar)
+- **Accesibilidad total**:
+  - HTML semántico, uso mínimo de ARIA
+  - Navegación completa por teclado
+  - aria-current en elementos activos
+  - Completamente accesible con lectores de pantalla

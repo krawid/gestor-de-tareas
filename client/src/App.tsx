@@ -19,6 +19,7 @@ import NotFound from "@/pages/not-found";
 export default function App() {
   const [selectedListId, setSelectedListId] = useState<string | null>(null);
   const [isAddListOpen, setIsAddListOpen] = useState(false);
+  const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [taskFilter, setTaskFilter] = useState<TaskFilterType>("all");
   const [isShortcutsHelpOpen, setIsShortcutsHelpOpen] = useState(false);
@@ -36,7 +37,7 @@ export default function App() {
       searchInputRef.current?.focus();
     },
     onFocusNewTask: () => {
-      homeRef.current?.focusAddTask();
+      setIsAddTaskOpen(true);
     },
     onNewList: () => {
       setIsAddListOpen(true);
@@ -84,6 +85,8 @@ export default function App() {
                     onAddListClick={() => setIsAddListOpen(true)}
                     isAddListOpen={isAddListOpen}
                     onAddListOpenChange={setIsAddListOpen}
+                    isAddTaskOpen={isAddTaskOpen}
+                    onAddTaskOpenChange={setIsAddTaskOpen}
                   />
                 </Route>
                 <Route component={NotFound} />

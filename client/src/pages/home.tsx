@@ -1,13 +1,15 @@
-import { useState, useRef, useImperativeHandle, forwardRef } from "react";
+import { useState, useImperativeHandle, forwardRef } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { AddTaskInput, type AddTaskInputRef } from "@/components/add-task-input";
+import { AddTaskDialog } from "@/components/add-task-dialog";
 import { TaskList } from "@/components/task-list";
 import { EditTaskDialog } from "@/components/edit-task-dialog";
 import { AddListDialog } from "@/components/add-list-dialog";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { TaskFilterType } from "@/components/task-filter";
-import type { Task, InsertTask, InsertList } from "@shared/schema";
+import type { Task, InsertTask, InsertList, List } from "@shared/schema";
 
 interface HomeProps {
   selectedListId: string | null;
@@ -16,6 +18,8 @@ interface HomeProps {
   onAddListClick: () => void;
   isAddListOpen: boolean;
   onAddListOpenChange: (open: boolean) => void;
+  isAddTaskOpen: boolean;
+  onAddTaskOpenChange: (open: boolean) => void;
 }
 
 export interface HomeRef {
@@ -23,20 +27,28 @@ export interface HomeRef {
 }
 
 const Home = forwardRef<HomeRef, HomeProps>(
-  ({ selectedListId, searchQuery, taskFilter, onAddListClick, isAddListOpen, onAddListOpenChange }, ref) => {
+  ({ selectedListId, searchQuery, taskFilter, onAddListClick, isAddListOpen, onAddListOpenChange, isAddTaskOpen, onAddTaskOpenChange }, ref) => {
     const [editingTask, setEditingTask] = useState<Task | null>(null);
     const { toast } = useToast();
-    const addTaskInputRef = useRef<AddTaskInputRef>(null);
 
     useImperativeHandle(ref, () => ({
       focusAddTask: () => {
-        addTaskInputRef.current?.focus();
+        onAddTaskOpenChange(true);
       },
     }));
 
     const { data: allTasks = [], isLoading } = useQuery<Task[]>({
       queryKey: ["/api/tasks"],
     });
+
+    const { data: lists = [] } = useQuery<List[]>({
+      queryKey: ["/api/lists"],
+    });
+
+    const selectedList = lists.find(l => l.id === selectedListId);
+    const pageTitle = selectedListId === null 
+      ? "Mostrando todas las tareas" 
+      : `Mostrando tareas de la lista ${selectedList?.name || ""}`;
 
     let filteredTasks = allTasks;
 
@@ -138,15 +150,8 @@ const Home = forwardRef<HomeRef, HomeProps>(
       },
     });
 
-    const handleAddTask = (title: string, dueDate: Date | null, priority: number) => {
-      createTaskMutation.mutate({
-        title,
-        description: null,
-        completed: false,
-        priority: priority,
-        listId: selectedListId,
-        dueDate: dueDate,
-      });
+    const handleAddTask = (data: InsertTask) => {
+      createTaskMutation.mutate(data);
     };
 
     const handleToggleTask = (id: string, completed: boolean) => {
@@ -183,16 +188,17 @@ const Home = forwardRef<HomeRef, HomeProps>(
       <div className="flex flex-col h-full">
         <div className="flex-1 overflow-auto">
           <div className="max-w-4xl mx-auto p-6 space-y-6">
-            <div>
-              <h1 className="text-2xl font-semibold mb-6" data-testid="text-page-title">
-                {selectedListId === null ? "Todas las tareas" : "Tareas"}
+            <div className="flex items-center justify-between mb-6">
+              <h1 className="text-2xl font-semibold" data-testid="text-page-title">
+                {pageTitle}
               </h1>
-              <AddTaskInput
-                ref={addTaskInputRef}
-                onAdd={handleAddTask}
-                listId={selectedListId}
-                autoFocus={true}
-              />
+              <Button
+                onClick={() => onAddTaskOpenChange(true)}
+                data-testid="button-add-task"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Añadir tarea
+              </Button>
             </div>
 
             <TaskList
@@ -203,6 +209,13 @@ const Home = forwardRef<HomeRef, HomeProps>(
             />
           </div>
         </div>
+
+        <AddTaskDialog
+          open={isAddTaskOpen}
+          onOpenChange={onAddTaskOpenChange}
+          onAdd={handleAddTask}
+          lists={lists}
+        />
 
         <EditTaskDialog
           task={editingTask}
