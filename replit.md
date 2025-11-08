@@ -9,9 +9,13 @@ Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante 
     - Añadir tarea ahora es un diálogo modal (evita mezcla con tareas existentes)
     - Selector de lista integrado en formularios de crear/editar tarea (select nativo)
     - Asignación explícita de lista en lugar de automática por contexto
+    - Modal de editar: eliminado botón "Cancelar" duplicado (DialogContent incluye botón X)
   - **Mejoras de accesibilidad**:
-    - Toast notifications solo se renderizan cuando hay notificaciones activas
+    - Toast notifications con región aria-live separada (solución a bug Radix UI #3634)
+    - Región sr-only siempre presente para que NVDA la registre al cargar la página
+    - Notificaciones descriptivas: "Tarea marcada como completada/pendiente" en lugar de mensaje genérico
     - aria-current="page" en botones de lista activos en sidebar
+    - Encabezados semánticos: "Mis Tareas" y "Listas" ahora son <h2> para navegación con lector
     - Encabezado descriptivo que indica vista activa ("Mostrando todas las tareas" / "Mostrando tareas de la lista X")
     - Sidebar siempre visible (toggle eliminado por no ser útil para lectores de pantalla)
   - **Filtros de tareas**: Todas/Completadas/Pendientes con anuncios de estado
@@ -21,6 +25,7 @@ Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante 
     - Listas puramente para filtrar vista (no auto-asignan tareas)
     - Selector "Asignar a lista" en formularios con opción "Sin lista"
     - Selectores nativos HTML en lugar de componentes custom
+    - Botón de eliminar lista junto a cada lista en sidebar con confirmación
 
 ## Architecture
 
@@ -53,6 +58,7 @@ Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante 
   - Sistema de prioridades (ninguna, baja, media, alta)
 - **Listas personalizables**:
   - Crear listas con nombre y color
+  - Eliminar listas (botón junto a cada lista en sidebar)
   - Filtrar vista por lista (sidebar)
   - Asignar tareas a listas explícitamente en formularios
   - Opción "Sin lista" disponible
@@ -63,7 +69,9 @@ Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante 
 - **Fechas de vencimiento**: Con indicadores de estado (vencido, hoy, futuro)
 - **Atajos de teclado**: N (nueva tarea), L (nueva lista), ? (ayuda), Escape (cerrar)
 - **Accesibilidad total**:
-  - HTML semántico, uso mínimo de ARIA
+  - HTML semántico (h1, h2, nav, main, form, label), uso mínimo de ARIA
   - Navegación completa por teclado
   - aria-current en elementos activos
-  - Completamente accesible con lectores de pantalla
+  - Notificaciones toast con región aria-live dedicada para NVDA
+  - Mensajes descriptivos y contextuales en todas las acciones
+  - Completamente accesible con lectores de pantalla (probado con NVDA en Chrome/Windows)
