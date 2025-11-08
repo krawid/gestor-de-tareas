@@ -31,10 +31,7 @@ export const insertTaskSchema = createInsertSchema(tasks, {
   dueDate: z.union([z.string(), z.date(), z.null()]).transform((val) => {
     if (val === null || val === undefined) return null;
     if (typeof val === 'string') {
-      if (val.includes('T')) {
-        return new Date(val);
-      }
-      return new Date(val + 'T12:00:00');
+      return new Date(val);
     }
     return val;
   }).optional(),
