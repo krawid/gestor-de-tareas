@@ -72,6 +72,7 @@ export function AddTaskDialog({ open, onOpenChange, onAdd, lists }: AddTaskDialo
                       placeholder="¿Qué necesitas hacer?"
                       className="text-base"
                       data-testid="input-task-title"
+                      required
                       autoFocus
                     />
                   </FormControl>

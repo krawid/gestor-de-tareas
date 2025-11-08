@@ -72,6 +72,7 @@ export function AddListDialog({ open, onOpenChange, onAdd }: AddListDialogProps)
                       placeholder="Ej: Trabajo, Personal, Compras"
                       className="text-base"
                       data-testid="input-list-name"
+                      required
                     />
                   </FormControl>
                   <FormMessage />

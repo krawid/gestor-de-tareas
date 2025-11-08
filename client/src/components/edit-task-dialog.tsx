@@ -97,6 +97,7 @@ export function EditTaskDialog({ task, open, onOpenChange, onSave }: EditTaskDia
                       {...field}
                       className="text-base"
                       data-testid="input-edit-title"
+                      required
                     />
                   </FormControl>
                   <FormMessage />

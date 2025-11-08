@@ -19,7 +19,9 @@ export const tasks = pgTable("tasks", {
   dueDate: timestamp("due_date"),
 });
 
-export const insertListSchema = createInsertSchema(lists).omit({
+export const insertListSchema = createInsertSchema(lists, {
+  name: z.string().min(1, "El nombre es requerido"),
+}).omit({
   id: true,
 });
 
