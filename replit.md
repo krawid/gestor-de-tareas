@@ -9,6 +9,11 @@ Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante 
   - **Filtros de tareas**: Todas/Completadas/Pendientes con anuncios de estado para lectores de pantalla
   - **Fechas de vencimiento**: Selector de fecha HTML5, indicadores visuales (rojo=vencido, ámbar=hoy, gris=futuro), corrección de bug de zona horaria
   - **Atajos de teclado**: N (nueva tarea), L (nueva lista), ? (ayuda), Escape (cerrar), modal de ayuda accesible
+  - **Mejoras de UX**: 
+    - Botón "+ Añadir tarea" que revela el formulario (interfaz minimalista)
+    - Selector de prioridad integrado en formularios de añadir/editar tarea
+    - Toggle sidebar funcional con Ctrl/Cmd+B
+    - Diálogos simplificados (solo botón X para cerrar)
   - Navegación completa por teclado con group-focus-within
   - Diseño limpio con fuente Inter y contraste WCAG AA
   - Todas las pruebas end-to-end pasadas exitosamente
