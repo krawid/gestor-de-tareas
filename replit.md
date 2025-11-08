@@ -12,8 +12,8 @@ Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante 
   - **Mejoras de UX**: 
     - Botón "+ Añadir tarea" que revela el formulario (interfaz minimalista)
     - Selector de prioridad integrado en formularios de añadir/editar tarea
-    - Toggle sidebar funcional con Ctrl/Cmd+B
     - Diálogos simplificados (solo botón X para cerrar)
+    - Sidebar siempre visible (toggle eliminado por no ser útil para lectores de pantalla)
   - Navegación completa por teclado con group-focus-within
   - Diseño limpio con fuente Inter y contraste WCAG AA
   - Todas las pruebas end-to-end pasadas exitosamente
