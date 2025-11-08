@@ -10,24 +10,6 @@ import { SearchInput } from "@/components/search-input";
 import Home from "@/pages/home";
 import NotFound from "@/pages/not-found";
 
-function Router() {
-  const [selectedListId, setSelectedListId] = useState<string | null>(null);
-  const [isAddListOpen, setIsAddListOpen] = useState(false);
-
-  return (
-    <Switch>
-      <Route path="/">
-        <Home
-          selectedListId={selectedListId}
-          onAddListClick={() => setIsAddListOpen(true)}
-          isAddListOpen={isAddListOpen}
-          onAddListOpenChange={setIsAddListOpen}
-        />
-      </Route>
-      <Route component={NotFound} />
-    </Switch>
-  );
-}
 
 export default function App() {
   const [selectedListId, setSelectedListId] = useState<string | null>(null);

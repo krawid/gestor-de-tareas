@@ -35,9 +35,11 @@ export class MemStorage implements IStorage {
   async createTask(insertTask: InsertTask): Promise<Task> {
     const id = randomUUID();
     const task: Task = {
-      ...insertTask,
       id,
+      title: insertTask.title,
       description: insertTask.description || null,
+      completed: insertTask.completed || false,
+      priority: insertTask.priority || 0,
       listId: insertTask.listId || null,
     };
     this.tasks.set(id, task);
@@ -67,7 +69,11 @@ export class MemStorage implements IStorage {
 
   async createList(insertList: InsertList): Promise<List> {
     const id = randomUUID();
-    const list: List = { ...insertList, id };
+    const list: List = {
+      id,
+      name: insertList.name,
+      color: insertList.color || "#2563eb",
+    };
     this.lists.set(id, list);
     return list;
   }
