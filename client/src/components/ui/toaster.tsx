@@ -10,6 +10,7 @@ import {
 
 export function Toaster() {
   const { toasts } = useToast()
+  const hasToasts = toasts.length > 0
 
   return (
     <ToastProvider>
@@ -27,7 +28,7 @@ export function Toaster() {
           </Toast>
         )
       })}
-      <ToastViewport />
+      <ToastViewport aria-hidden={!hasToasts} style={{ display: hasToasts ? undefined : 'none' }} />
     </ToastProvider>
   )
 }
