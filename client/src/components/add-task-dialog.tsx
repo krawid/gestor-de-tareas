@@ -23,6 +23,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 
+// Helper para formatear Date a string datetime-local sin conversión de zona horaria
+function formatDateTimeLocal(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
 interface AddTaskDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -168,7 +178,7 @@ export function AddTaskDialog({ open, onOpenChange, onAdd, lists }: AddTaskDialo
                   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
                   const currentValue = field.value
                     ? field.value instanceof Date
-                      ? field.value.toISOString().slice(0, 16)
+                      ? formatDateTimeLocal(field.value)
                       : ""
                     : "";
 
@@ -182,15 +192,13 @@ export function AddTaskDialog({ open, onOpenChange, onAdd, lists }: AddTaskDialo
                             type="datetime-local"
                             value={currentValue}
                             readOnly={isIOS && !isInteracting}
-                            onChange={() => {}}
-                            onClick={() => isIOS && setIsInteracting(true)}
-                            onBlur={(e) => {
-                              if (isIOS) setIsInteracting(false);
+                            onChange={(e) => {
                               const value = e.target.value;
-                              // Solo actualizar si el valor realmente cambió
-                              if (value !== currentValue) {
-                                field.onChange(value ? new Date(value) : null);
-                              }
+                              field.onChange(value ? new Date(value) : null);
+                            }}
+                            onClick={() => isIOS && setIsInteracting(true)}
+                            onBlur={() => {
+                              if (isIOS) setIsInteracting(false);
                             }}
                             className="text-base"
                             data-testid="input-task-due-date"
