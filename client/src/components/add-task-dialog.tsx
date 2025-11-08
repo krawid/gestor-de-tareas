@@ -177,6 +177,12 @@ export function AddTaskDialog({ open, onOpenChange, onAdd, lists }: AddTaskDialo
                               : ""
                           }
                           onChange={() => {}}
+                          onClick={(e) => {
+                            // Forzar blur/focus solo cuando hay click real (no solo navegación con VoiceOver)
+                            const target = e.target as HTMLInputElement;
+                            target.blur();
+                            setTimeout(() => target.focus(), 10);
+                          }}
                           onBlur={(e) => {
                             const value = e.target.value;
                             field.onChange(value ? value : null);

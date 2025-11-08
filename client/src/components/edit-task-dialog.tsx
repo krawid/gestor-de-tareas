@@ -192,6 +192,12 @@ export function EditTaskDialog({ task, open, onOpenChange, onSave }: EditTaskDia
                         type="date"
                         value={field.value ? new Date(field.value).toISOString().split('T')[0] : ""}
                         onChange={() => {}}
+                        onClick={(e) => {
+                          // Forzar blur/focus solo cuando hay click real (no solo navegación con VoiceOver)
+                          const target = e.target as HTMLInputElement;
+                          target.blur();
+                          setTimeout(() => target.focus(), 10);
+                        }}
                         onBlur={(e) => field.onChange(e.target.value ? new Date(e.target.value + 'T12:00:00') : null)}
                         className="text-base"
                         data-testid="input-edit-due-date"
