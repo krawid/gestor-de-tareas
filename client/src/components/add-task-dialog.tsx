@@ -168,18 +168,18 @@ export function AddTaskDialog({ open, onOpenChange, onAdd, lists }: AddTaskDialo
                   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
                   const currentValue = field.value
                     ? field.value instanceof Date
-                      ? field.value.toISOString().split("T")[0]
+                      ? field.value.toISOString().slice(0, 16)
                       : ""
                     : "";
 
                   return (
                     <FormItem>
-                      <FormLabel htmlFor="task-due-date">Fecha de vencimiento</FormLabel>
+                      <FormLabel htmlFor="task-due-date">Fecha y hora de vencimiento</FormLabel>
                       <div className="flex gap-2">
                         <FormControl>
                           <Input
                             id="task-due-date"
-                            type="date"
+                            type="datetime-local"
                             value={currentValue}
                             readOnly={isIOS && !isInteracting}
                             onChange={() => {}}
@@ -189,7 +189,7 @@ export function AddTaskDialog({ open, onOpenChange, onAdd, lists }: AddTaskDialo
                               const value = e.target.value;
                               // Solo actualizar si el valor realmente cambió
                               if (value !== currentValue) {
-                                field.onChange(value ? value : null);
+                                field.onChange(value ? new Date(value) : null);
                               }
                             }}
                             className="text-base"
