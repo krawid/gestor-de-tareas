@@ -75,7 +75,7 @@ export default function App() {
                 <HelpCircle className="h-5 w-5" />
               </Button>
             </header>
-            <main className="flex-1 overflow-hidden">
+            <div className="flex-1 overflow-hidden">
               <Switch>
                 <Route path="/">
                   <Home
@@ -92,7 +92,7 @@ export default function App() {
                 </Route>
                 <Route component={NotFound} />
               </Switch>
-            </main>
+            </div>
           </SidebarInset>
         </SidebarProvider>
         <KeyboardShortcutsHelp 
