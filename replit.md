@@ -4,11 +4,11 @@
 Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante HTML semántico. Diseñada para ser completamente accesible con lectores de pantalla y navegación por teclado, sin uso excesivo de ARIA.
 
 ## Recent Changes
-- **2025-11-10**: Selector de minutos mejorado
-  - **Granularidad completa**: Selector de minutos ahora muestra todos los valores de 0 a 59 (antes solo 0, 15, 30, 45)
-  - **Mayor precisión**: Los usuarios pueden seleccionar cualquier minuto específico para sus tareas
-  - **Tests e2e pasando**: Verificado funcionamiento con valores como 08, 37, 45, etc.
-  - **Banner de permisos mejorado**: Botón siempre visible (data-testid correcto) independiente del estado del permiso
+- **2025-11-10**: Sistema de notificaciones eliminado
+  - **Razón**: Web Notifications API es fundamentalmente poco confiable (iOS Safari no lo soporta excepto en PWAs, navegadores suspenden timers en pestañas inactivas)
+  - **Eliminado**: Campo reminderMinutes, notificationService.ts, selectores de recordatorio, banner de permisos, columna de base de datos
+  - **Solución futura**: Si se necesitan recordatorios, implementar sistema server-side con emails en lugar de Web Notifications API
+  - **Selector de minutos mejorado**: Ahora muestra todos los valores de 0 a 59 (antes solo 0, 15, 30, 45) para mayor precisión
 - **2025-11-09**: Refactorización mayor de fecha/hora, persistencia y notificaciones
   - **HTML semántico**: Corregido elemento `<main>` duplicado (SidebarInset ya usa `<main>`, App.tsx cambió a `<div>`)
   - **Persistencia con PostgreSQL**:
@@ -22,19 +22,6 @@ Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante 
     - IDs únicos por instancia usando React `useId()` para evitar duplicados
     - Totalmente accesible con NVDA (Chrome/Windows) y VoiceOver (Safari/iPhone)
     - Eliminados inputs type="date" y type="time" problemáticos con lectores de pantalla
-  - **Sistema de notificaciones robusto**:
-    - Sistema de polling con setInterval (cada 60 segundos)
-    - Ventana de catch-up de 5 minutos para notificaciones perdidas (ej: pestaña suspendida)
-    - Page Visibility API detecta cuando la página vuelve a estar visible y verifica inmediatamente
-    - Registro persistente de recordatorios disparados: cada recordatorio solo se dispara UNA vez
-    - Limpieza automática del registro cuando se editan/eliminan tareas o cambia el recordatorio
-    - Función `updateNotificationSchedule()` verifica inmediatamente después de mutaciones
-    - Banner con botón visible "Permitir notificaciones" cuando permisos están bloqueados
-    - Sin bucles infinitos ni recursión (código simple y mantenible)
-  - **Botón de permisos mejorado**:
-    - Cambió de enlace de texto a Button de shadcn más visible
-    - Incluye icono de campana
-    - Mejor accesibilidad y UX
   - **Limpieza de código**:
     - Eliminadas importaciones innecesarias (X de lucide-react en add-task-dialog)
     - TypeScript types mejorados para evitar undefined en DateTimePicker
@@ -52,14 +39,6 @@ Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante 
     - Formateo manual con getFullYear()/getMonth()+1/getDate() (sin conversión UTC)
     - Construcción de Date con new Date(year, month-1, day, hours, minutes) en zona horaria local
     - Garantiza sincronización correcta después de form.reset() y entre diferentes tareas
-  - **Sistema de recordatorios**: Implementado usando Web Notifications API
-    - Campo reminderMinutes en schema de tareas (entero nullable, minutos antes de dueDate)
-    - Selector de recordatorio: sin recordatorio, 15min, 30min, 1h, 3h, 6h, 12h, 24h antes
-    - Verifica tareas cada minuto para mostrar notificaciones en el momento apropiado
-    - Deduplica notificaciones para evitar repeticiones
-    - Solicita permisos automáticamente cuando hay tareas con recordatorios
-    - Degrada gracefully en navegadores sin soporte para Notifications API
-    - Selector deshabilitado si no hay fecha de vencimiento, con mensaje explicativo
 - **2025-11-08 (mañana)**: Refactorización mayor para mejorar accesibilidad y claridad
   - **Jerarquía de encabezados**:
     - h1 "Gestor de tareas" como encabezado principal en sidebar
@@ -114,7 +93,7 @@ Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante 
 - Validación con Zod
 
 ### Data Model
-- **Tasks**: id, title, description, completed, priority (0-3), listId, dueDate (timestamp), reminderMinutes (integer nullable)
+- **Tasks**: id, title, description, completed, priority (0-3), listId, dueDate (timestamp)
 - **Lists**: id, name, color
 
 ## User Preferences
@@ -124,11 +103,10 @@ Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante 
 
 ## Key Features
 - **Gestión de tareas**:
-  - Crear tareas mediante diálogo modal con campos: título, descripción, lista, prioridad, fecha, recordatorio
+  - Crear tareas mediante diálogo modal con campos: título, descripción, lista, prioridad, fecha/hora
   - Editar y eliminar tareas existentes
   - Marcar tareas como completadas/pendientes
   - Sistema de prioridades (ninguna, baja, media, alta)
-  - Recordatorios con notificaciones del navegador (15min a 24h antes de fecha de vencimiento)
 - **Listas personalizables**:
   - Crear listas con nombre y color
   - Eliminar listas (botón junto a cada lista en sidebar)
