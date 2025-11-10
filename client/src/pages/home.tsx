@@ -17,17 +17,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Plus, Bell } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { TaskFilterType } from "@/components/task-filter";
 import type { Task, InsertTask, InsertList, List } from "@shared/schema";
-import { 
-  startNotificationService, 
-  stopNotificationService, 
-  requestNotificationPermission,
-  updateNotificationSchedule
-} from "@/lib/notificationService";
 
 interface HomeProps {
   selectedListId: string | null;
@@ -48,7 +41,6 @@ const Home = forwardRef<HomeRef, HomeProps>(
   ({ selectedListId, searchQuery, taskFilter, onAddListClick, isAddListOpen, onAddListOpenChange, isAddTaskOpen, onAddTaskOpenChange }, ref) => {
     const [editingTask, setEditingTask] = useState<Task | null>(null);
     const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
-    const [showNotificationBanner, setShowNotificationBanner] = useState(false);
     const { toast } = useToast();
 
     useImperativeHandle(ref, () => ({
@@ -64,46 +56,6 @@ const Home = forwardRef<HomeRef, HomeProps>(
     const { data: lists = [] } = useQuery<List[]>({
       queryKey: ["/api/lists"],
     });
-
-    // Servicio de notificaciones
-    useEffect(() => {
-      // Verificar si el navegador soporta notificaciones
-      if (!("Notification" in window)) {
-        setShowNotificationBanner(false);
-        return;
-      }
-
-      // Verificar si hay tareas con recordatorios
-      const hasReminders = allTasks.some(task => 
-        !task.completed && 
-        task.reminderMinutes !== null && 
-        task.reminderMinutes !== undefined
-      );
-
-      // Mostrar banner si hay recordatorios pero no hay permisos
-      if (hasReminders && Notification.permission !== "granted") {
-        setShowNotificationBanner(true);
-      } else {
-        setShowNotificationBanner(false);
-      }
-
-      // Solicitar permisos si hay tareas con recordatorios
-      if (hasReminders && Notification.permission === "default") {
-        requestNotificationPermission().then(granted => {
-          if (granted) {
-            setShowNotificationBanner(false);
-          }
-        });
-      }
-
-      // Iniciar el servicio de notificaciones
-      startNotificationService(() => allTasks);
-
-      // Detener el servicio al desmontar
-      return () => {
-        stopNotificationService();
-      };
-    }, [allTasks]);
 
     const selectedList = lists.find(l => l.id === selectedListId);
     const pageTitle = selectedListId === null 
@@ -136,7 +88,6 @@ const Home = forwardRef<HomeRef, HomeProps>(
       },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-        updateNotificationSchedule();
         toast({
           title: "Tarea creada",
           description: "La tarea se ha añadido correctamente",
@@ -157,7 +108,6 @@ const Home = forwardRef<HomeRef, HomeProps>(
       },
       onSuccess: (_, variables) => {
         queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-        updateNotificationSchedule();
         
         // Si se está actualizando el estado de completado, usar mensaje específico
         if (variables.data.completed !== undefined) {
@@ -190,7 +140,6 @@ const Home = forwardRef<HomeRef, HomeProps>(
       },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-        updateNotificationSchedule();
         toast({
           title: "Tarea eliminada",
           description: "La tarea se ha eliminado correctamente",
@@ -285,46 +234,6 @@ const Home = forwardRef<HomeRef, HomeProps>(
       <div className="flex flex-col h-full">
         <div className="flex-1 overflow-auto">
           <div className="max-w-4xl mx-auto p-6 space-y-6">
-            {showNotificationBanner && (
-              <Alert>
-                <Bell className="h-4 w-4" />
-                <AlertTitle>Permisos de notificación necesarios</AlertTitle>
-                <AlertDescription className="flex flex-col gap-3">
-                  <p>
-                    Tienes tareas con recordatorios, pero las notificaciones están bloqueadas.
-                  </p>
-                  <Button
-                    variant="default"
-                    size="sm"
-                    onClick={() => {
-                      if (Notification.permission === "denied") {
-                        toast({
-                          title: "Permisos denegados",
-                          description: "Los permisos de notificación están bloqueados. Por favor, habilítalos en la configuración de tu navegador.",
-                          variant: "destructive",
-                        });
-                      } else {
-                        requestNotificationPermission().then(granted => {
-                          if (granted) {
-                            setShowNotificationBanner(false);
-                            toast({
-                              title: "Permisos otorgados",
-                              description: "Ahora recibirás notificaciones de tus recordatorios.",
-                            });
-                          }
-                        });
-                      }
-                    }}
-                    data-testid="button-request-notification-permission"
-                    className="w-fit"
-                  >
-                    <Bell className="h-4 w-4 mr-2" />
-                    {Notification.permission === "denied" ? "Cómo activar notificaciones" : "Permitir notificaciones"}
-                  </Button>
-                </AlertDescription>
-              </Alert>
-            )}
-            
             <div className="flex items-center justify-between mb-6">
               {!showSeparatedSections && contextTitle && (
                 <h2 className="text-xl font-semibold" data-testid="text-context-title">
