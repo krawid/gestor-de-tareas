@@ -103,8 +103,8 @@ export function DateTimePicker({
   // Generar horas (0-23)
   const hours = Array.from({ length: 24 }, (_, i) => i);
 
-  // Generar minutos (0, 15, 30, 45)
-  const minutes = [0, 15, 30, 45];
+  // Generar minutos (0-59)
+  const minutes = Array.from({ length: 60 }, (_, i) => i);
 
   return (
     <div className="space-y-4">

@@ -4,6 +4,11 @@
 Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante HTML semántico. Diseñada para ser completamente accesible con lectores de pantalla y navegación por teclado, sin uso excesivo de ARIA.
 
 ## Recent Changes
+- **2025-11-10**: Selector de minutos mejorado
+  - **Granularidad completa**: Selector de minutos ahora muestra todos los valores de 0 a 59 (antes solo 0, 15, 30, 45)
+  - **Mayor precisión**: Los usuarios pueden seleccionar cualquier minuto específico para sus tareas
+  - **Tests e2e pasando**: Verificado funcionamiento con valores como 08, 37, 45, etc.
+  - **Banner de permisos mejorado**: Botón siempre visible (data-testid correcto) independiente del estado del permiso
 - **2025-11-09**: Refactorización mayor de fecha/hora, persistencia y notificaciones
   - **HTML semántico**: Corregido elemento `<main>` duplicado (SidebarInset ya usa `<main>`, App.tsx cambió a `<div>`)
   - **Persistencia con PostgreSQL**:
@@ -13,7 +18,7 @@ Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante 
     - Datos persisten entre sesiones y dispositivos
   - **Selectores de fecha/hora accesibles** (estilo GOV.UK):
     - Componente `DateTimePicker` con selectores separados para día, mes (nombres localizados), año
-    - Checkbox "Añadir hora específica" que muestra selectores de hora y minuto
+    - Checkbox "Añadir hora específica" que muestra selectores de hora (0-23) y minuto (0-59)
     - IDs únicos por instancia usando React `useId()` para evitar duplicados
     - Totalmente accesible con NVDA (Chrome/Windows) y VoiceOver (Safari/iPhone)
     - Eliminados inputs type="date" y type="time" problemáticos con lectores de pantalla
