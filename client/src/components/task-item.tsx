@@ -98,13 +98,6 @@ export function TaskItem({ task, onToggle, onEdit, onDelete }: TaskItemProps) {
             Prioridad: {priorityLabels[task.priority as keyof typeof priorityLabels]}
           </span>
         )}
-        {dueDate && (
-          <span className="sr-only">
-            Fecha de vencimiento: {formatDueDate(dueDate)}
-            {isOverdue && ", tarea vencida"}
-            {isDueToday && ", vence hoy"}
-          </span>
-        )}
       </label>
 
       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">

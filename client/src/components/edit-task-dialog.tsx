@@ -214,7 +214,6 @@ export function EditTaskDialog({ task, open, onOpenChange, onSave }: EditTaskDia
                         onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
                         className="w-full text-base border border-input rounded-md px-3 py-2 bg-background"
                         data-testid="select-edit-reminder"
-                        disabled={!dueDateValue}
                       >
                         <option value="">Sin recordatorio</option>
                         <option value="15">15 minutos antes</option>
@@ -228,7 +227,7 @@ export function EditTaskDialog({ task, open, onOpenChange, onSave }: EditTaskDia
                     </FormControl>
                     {!dueDateValue && (
                       <p className="text-sm text-muted-foreground">
-                        Establece una fecha de vencimiento para activar recordatorios
+                        Nota: necesitas establecer una fecha de vencimiento para que los recordatorios funcionen
                       </p>
                     )}
                     <FormMessage />
