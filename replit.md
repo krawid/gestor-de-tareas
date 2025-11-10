@@ -4,7 +4,18 @@
 Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante HTML semántico. Diseñada para ser completamente accesible con lectores de pantalla y navegación por teclado, sin uso excesivo de ARIA.
 
 ## Recent Changes
-- **2025-11-10**: Sistema de notificaciones eliminado
+- **2025-11-10 (tarde)**: Checkbox "sin fecha" y ordenamiento por fecha de vencimiento
+  - **Checkbox "Añadir fecha de vencimiento"**: Nuevo checkbox que controla la visibilidad de todos los selectores de fecha/hora
+    - Similar al checkbox "Añadir hora específica" existente
+    - Cuando está desmarcado: no se muestran selectores y dueDate = null
+    - Cuando está marcado: se muestran selectores de día, mes, año
+    - Totalmente accesible con lectores de pantalla
+  - **Ordenamiento automático de tareas**: Las tareas ahora se ordenan automáticamente
+    - Tareas con fecha de vencimiento primero, ordenadas por fecha/hora ascendente (las más próximas primero)
+    - Tareas sin fecha al final
+    - El ordenamiento considera tanto la fecha como la hora (usando getTime())
+    - Implementación eficiente sin mutación del array original
+- **2025-11-10 (mañana)**: Sistema de notificaciones eliminado
   - **Razón**: Web Notifications API es fundamentalmente poco confiable (iOS Safari no lo soporta excepto en PWAs, navegadores suspenden timers en pestañas inactivas)
   - **Eliminado**: Campo reminderMinutes, notificationService.ts, selectores de recordatorio, banner de permisos, columna de base de datos
   - **Solución futura**: Si se necesitan recordatorios, implementar sistema server-side con emails en lugar de Web Notifications API
@@ -18,6 +29,7 @@ Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante 
     - Datos persisten entre sesiones y dispositivos
   - **Selectores de fecha/hora accesibles** (estilo GOV.UK):
     - Componente `DateTimePicker` con selectores separados para día, mes (nombres localizados), año
+    - Checkbox "Añadir fecha de vencimiento" para mostrar/ocultar todos los selectores de fecha
     - Checkbox "Añadir hora específica" que muestra selectores de hora (0-23) y minuto (0-59)
     - IDs únicos por instancia usando React `useId()` para evitar duplicados
     - Totalmente accesible con NVDA (Chrome/Windows) y VoiceOver (Safari/iPhone)
@@ -118,9 +130,11 @@ Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante 
   - Búsqueda global en tiempo real por título y descripción
   - Encabezado descriptivo indica vista activa
 - **Fechas de vencimiento**: 
+  - Checkbox "Añadir fecha de vencimiento" para tareas sin fecha
   - Selectores segmentados accesibles (día, mes, año, hora, minuto)
-  - Checkbox opcional "Añadir hora específica"
+  - Checkbox "Añadir hora específica" para añadir hora a una fecha
   - Indicadores visuales de estado (vencido, hoy, futuro)
+  - Ordenamiento automático: tareas con fecha primero (más próximas arriba), sin fecha al final
   - Compatible con NVDA y VoiceOver
 - **Atajos de teclado**: N (nueva tarea), L (nueva lista), ? (ayuda), Escape (cerrar)
 - **Accesibilidad total**:
