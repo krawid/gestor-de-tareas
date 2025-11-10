@@ -34,6 +34,10 @@ export function TaskItem({ task, onToggle, onEdit, onDelete }: TaskItemProps) {
   const isDueToday = dueDate && !task.completed && isToday(dueDate);
 
   const formatDueDate = (date: Date) => {
+    const hasSpecificTime = date.getHours() !== 0 || date.getMinutes() !== 0;
+    if (hasSpecificTime) {
+      return format(date, "d 'de' MMMM, HH:mm", { locale: es });
+    }
     return format(date, "d 'de' MMMM", { locale: es });
   };
 

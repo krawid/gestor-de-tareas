@@ -28,6 +28,10 @@ Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante 
   - **Limpieza de código**:
     - Eliminadas importaciones innecesarias (X de lucide-react en add-task-dialog)
     - TypeScript types mejorados para evitar undefined en DateTimePicker
+  - **Formato de fecha corregido**:
+    - Función formatDueDate ahora detecta si la fecha tiene hora específica
+    - Muestra "d de MMMM, HH:mm" cuando hay hora (ej: "15 de diciembre, 14:30")
+    - Muestra solo "d de MMMM" cuando no hay hora (ej: "15 de diciembre")
 - **2025-11-08 (tarde)**: Mejoras de accesibilidad en selectores de fecha/hora
   - **Campos separados**: Separación de datetime-local en dos inputs independientes para VoiceOver
     - Input type="date" etiquetado como "Fecha de vencimiento"
