@@ -19,12 +19,17 @@ Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante 
     - Eliminados inputs type="date" y type="time" problemáticos con lectores de pantalla
   - **Sistema de notificaciones robusto**:
     - Sistema de polling con setInterval (cada 60 segundos)
-    - Ventana de catch-up de 90 segundos para notificaciones perdidas
+    - Ventana de catch-up de 5 minutos para notificaciones perdidas (ej: pestaña suspendida)
     - Page Visibility API detecta cuando la página vuelve a estar visible y verifica inmediatamente
-    - Deduplicación usando `lastNotifiedAt` Map por tarea (evita notificaciones repetidas en 2 minutos)
+    - Registro persistente de recordatorios disparados: cada recordatorio solo se dispara UNA vez
+    - Limpieza automática del registro cuando se editan/eliminan tareas o cambia el recordatorio
     - Función `updateNotificationSchedule()` verifica inmediatamente después de mutaciones
-    - Banner contextual cuando hay tareas con recordatorios pero permisos bloqueados
+    - Banner con botón visible "Permitir notificaciones" cuando permisos están bloqueados
     - Sin bucles infinitos ni recursión (código simple y mantenible)
+  - **Botón de permisos mejorado**:
+    - Cambió de enlace de texto a Button de shadcn más visible
+    - Incluye icono de campana
+    - Mejor accesibilidad y UX
   - **Limpieza de código**:
     - Eliminadas importaciones innecesarias (X de lucide-react en add-task-dialog)
     - TypeScript types mejorados para evitar undefined en DateTimePicker

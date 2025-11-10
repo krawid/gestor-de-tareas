@@ -289,26 +289,38 @@ const Home = forwardRef<HomeRef, HomeProps>(
               <Alert>
                 <Bell className="h-4 w-4" />
                 <AlertTitle>Permisos de notificación necesarios</AlertTitle>
-                <AlertDescription>
-                  Tienes tareas con recordatorios, pero las notificaciones están bloqueadas. 
-                  {" "}
-                  {Notification.permission === "denied" ? (
-                    "Para recibir recordatorios, permite las notificaciones en la configuración de tu navegador."
-                  ) : (
-                    <button
-                      className="text-primary underline hover:no-underline cursor-pointer"
-                      onClick={() => {
+                <AlertDescription className="flex flex-col gap-3">
+                  <p>
+                    Tienes tareas con recordatorios, pero las notificaciones están bloqueadas.
+                  </p>
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => {
+                      if (Notification.permission === "denied") {
+                        toast({
+                          title: "Permisos denegados",
+                          description: "Los permisos de notificación están bloqueados. Por favor, habilítalos en la configuración de tu navegador.",
+                          variant: "destructive",
+                        });
+                      } else {
                         requestNotificationPermission().then(granted => {
                           if (granted) {
                             setShowNotificationBanner(false);
+                            toast({
+                              title: "Permisos otorgados",
+                              description: "Ahora recibirás notificaciones de tus recordatorios.",
+                            });
                           }
                         });
-                      }}
-                      data-testid="button-request-notification-permission"
-                    >
-                      Haz clic aquí para permitir notificaciones
-                    </button>
-                  )}
+                      }
+                    }}
+                    data-testid="button-request-notification-permission"
+                    className="w-fit"
+                  >
+                    <Bell className="h-4 w-4 mr-2" />
+                    {Notification.permission === "denied" ? "Cómo activar notificaciones" : "Permitir notificaciones"}
+                  </Button>
                 </AlertDescription>
               </Alert>
             )}

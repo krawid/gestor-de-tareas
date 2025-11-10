@@ -1,10 +1,14 @@
 import type { Task } from "@shared/schema";
 
-// Almacenamos el timestamp de la última notificación mostrada por tarea
-const lastNotifiedAt = new Map<string, number>();
+// Almacenamos el timestamp del recordatorio que ya notificamos por cada tarea
+// Clave: task.id, Valor: timestamp del recordatorio que ya se disparó
+const notifiedReminders = new Map<string, number>();
 
 // Intervalo de verificación (1 minuto)
 const CHECK_INTERVAL_MS = 60 * 1000;
+
+// Ventana de catch-up: 5 minutos para notificaciones perdidas
+const CATCH_UP_WINDOW_MS = 5 * 60 * 1000;
 
 // ID del intervalo activo
 let activeInterval: number | null = null;
@@ -36,18 +40,11 @@ export async function requestNotificationPermission(): Promise<boolean> {
 }
 
 /**
- * Muestra una notificación para una tarea
+ * Muestra una notificación para una tarea y registra el recordatorio como notificado
  * @param task La tarea para la que mostrar la notificación
+ * @param reminderTime El timestamp del recordatorio que se está disparando
  */
-function showTaskNotification(task: Task): void {
-  const now = Date.now();
-  const lastNotified = lastNotifiedAt.get(task.id);
-  
-  // Si ya notificamos esta tarea en los últimos 2 minutos, no notificar de nuevo
-  if (lastNotified && (now - lastNotified) < 2 * 60 * 1000) {
-    return;
-  }
-
+function showTaskNotification(task: Task, reminderTime: number): void {
   const title = "Recordatorio de tarea";
   const body = task.title;
   const options: NotificationOptions = {
@@ -61,19 +58,14 @@ function showTaskNotification(task: Task): void {
   try {
     const notification = new Notification(title, options);
     
-    // Registrar que notificamos esta tarea
-    lastNotifiedAt.set(task.id, now);
+    // Registrar que notificamos este recordatorio específico
+    notifiedReminders.set(task.id, reminderTime);
 
     // Enfocar la ventana cuando hagan click en la notificación
     notification.onclick = () => {
       window.focus();
       notification.close();
     };
-
-    // Limpiar del map después de 5 minutos
-    setTimeout(() => {
-      lastNotifiedAt.delete(task.id);
-    }, 5 * 60 * 1000);
   } catch (error) {
     console.error("Error mostrando notificación:", error);
   }
@@ -100,14 +92,22 @@ function checkAndNotifyReminders(): void {
     const dueDate = new Date(task.dueDate);
     const reminderTime = dueDate.getTime() - task.reminderMinutes * 60 * 1000;
 
-    // Ventana de notificación: entre 90 segundos antes y ahora
-    // Esto permite catch-up de notificaciones perdidas sin ser demasiado agresivo
-    const notificationWindow = 90 * 1000; // 90 segundos
+    // Verificar si ya notificamos este recordatorio específico
+    const lastNotifiedReminderTime = notifiedReminders.get(task.id);
+    if (lastNotifiedReminderTime === reminderTime) {
+      // Ya notificamos este recordatorio exacto, no volver a disparar
+      return;
+    }
+
+    // Calcular cuánto tiempo ha pasado desde el momento del recordatorio
     const timeSinceReminder = now - reminderTime;
 
-    // Si el recordatorio ya pasó pero está dentro de la ventana de catch-up
-    if (timeSinceReminder >= 0 && timeSinceReminder <= notificationWindow) {
-      showTaskNotification(task);
+    // Ventana de notificación: disparar si el recordatorio está entre:
+    // - 0 segundos (justo ahora) y CATCH_UP_WINDOW_MS (ventana de catch-up)
+    // Esto permite recuperar notificaciones perdidas (ej: pestaña suspendida)
+    // Pero cada recordatorio específico solo se dispara UNA vez gracias al registro persistente
+    if (timeSinceReminder >= 0 && timeSinceReminder < CATCH_UP_WINDOW_MS) {
+      showTaskNotification(task, reminderTime);
     }
   });
 }
@@ -166,6 +166,37 @@ export function stopNotificationService(): void {
  * Llama a esta función después de crear, editar o eliminar tareas
  */
 export function updateNotificationSchedule(): void {
-  // Con el sistema de polling, solo verificamos inmediatamente
+  // Limpiar recordatorios notificados de tareas que ya no existen o cambiaron
+  if (getTasksFn) {
+    const tasks = getTasksFn();
+    const existingTaskIds = new Set(tasks.map(t => t.id));
+    
+    // Limpiar recordatorios de tareas que ya no existen
+    Array.from(notifiedReminders.keys()).forEach(taskId => {
+      if (!existingTaskIds.has(taskId)) {
+        notifiedReminders.delete(taskId);
+      }
+    });
+    
+    // Limpiar recordatorios si la tarea cambió su recordatorio
+    tasks.forEach(task => {
+      if (!task.dueDate || !task.reminderMinutes) {
+        // Si la tarea ya no tiene recordatorio, limpiar
+        notifiedReminders.delete(task.id);
+        return;
+      }
+      
+      const dueDate = new Date(task.dueDate);
+      const currentReminderTime = dueDate.getTime() - task.reminderMinutes * 60 * 1000;
+      const notifiedReminderTime = notifiedReminders.get(task.id);
+      
+      // Si el recordatorio cambió, limpiar el registro
+      if (notifiedReminderTime && notifiedReminderTime !== currentReminderTime) {
+        notifiedReminders.delete(task.id);
+      }
+    });
+  }
+  
+  // Verificar inmediatamente
   checkAndNotifyReminders();
 }
