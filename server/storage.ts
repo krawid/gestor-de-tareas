@@ -1,5 +1,6 @@
-import { type Task, type InsertTask, type List, type InsertList } from "@shared/schema";
-import { randomUUID } from "crypto";
+// Code from blueprint:javascript_database integration
+import { tasks, lists, type Task, type InsertTask, type List, type InsertList } from "@shared/schema";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   getTasks(): Promise<Task[]>;
@@ -15,92 +16,216 @@ export interface IStorage {
   deleteList(id: string): Promise<boolean>;
 }
 
+// In-memory storage implementation
 export class MemStorage implements IStorage {
-  private tasks: Map<string, Task>;
-  private lists: Map<string, List>;
-
-  constructor() {
-    this.tasks = new Map();
-    this.lists = new Map();
-  }
+  private tasks: Task[] = [];
+  private lists: List[] = [];
+  private taskIdCounter = 1;
+  private listIdCounter = 1;
 
   async getTasks(): Promise<Task[]> {
-    return Array.from(this.tasks.values());
+    return [...this.tasks];
   }
 
   async getTask(id: string): Promise<Task | undefined> {
-    return this.tasks.get(id);
+    return this.tasks.find(task => task.id === id);
   }
 
   async createTask(insertTask: InsertTask): Promise<Task> {
-    const id = randomUUID();
     const task: Task = {
-      id,
-      title: insertTask.title,
-      description: insertTask.description || null,
-      completed: insertTask.completed || false,
-      priority: insertTask.priority || 0,
-      listId: insertTask.listId || null,
-      dueDate: insertTask.dueDate || null,
-      reminderMinutes: insertTask.reminderMinutes || null,
+      ...insertTask,
+      id: String(this.taskIdCounter++),
+      description: insertTask.description ?? null,
+      completed: insertTask.completed ?? false,
+      priority: insertTask.priority ?? 0,
+      dueDate: insertTask.dueDate ?? null,
+      reminderMinutes: insertTask.reminderMinutes ?? null,
+      listId: insertTask.listId ?? null,
     };
-    this.tasks.set(id, task);
+    this.tasks.push(task);
     return task;
   }
 
   async updateTask(id: string, updates: Partial<Task>): Promise<Task | undefined> {
-    const task = this.tasks.get(id);
-    if (!task) return undefined;
-
-    const updatedTask = { ...task, ...updates };
-    this.tasks.set(id, updatedTask);
-    return updatedTask;
+    const index = this.tasks.findIndex(task => task.id === id);
+    if (index === -1) return undefined;
+    
+    this.tasks[index] = { ...this.tasks[index], ...updates };
+    return this.tasks[index];
   }
 
   async deleteTask(id: string): Promise<boolean> {
-    return this.tasks.delete(id);
+    const index = this.tasks.findIndex(task => task.id === id);
+    if (index === -1) return false;
+    
+    this.tasks.splice(index, 1);
+    return true;
   }
 
   async getLists(): Promise<List[]> {
-    return Array.from(this.lists.values());
+    return [...this.lists];
   }
 
   async getList(id: string): Promise<List | undefined> {
-    return this.lists.get(id);
+    return this.lists.find(list => list.id === id);
   }
 
   async createList(insertList: InsertList): Promise<List> {
-    const id = randomUUID();
     const list: List = {
-      id,
-      name: insertList.name,
-      color: insertList.color || "#2563eb",
+      ...insertList,
+      id: String(this.listIdCounter++),
+      color: insertList.color ?? "#808080",
     };
-    this.lists.set(id, list);
+    this.lists.push(list);
     return list;
   }
 
   async updateList(id: string, updates: Partial<List>): Promise<List | undefined> {
-    const list = this.lists.get(id);
-    if (!list) return undefined;
-
-    const updatedList = { ...list, ...updates };
-    this.lists.set(id, updatedList);
-    return updatedList;
+    const index = this.lists.findIndex(list => list.id === id);
+    if (index === -1) return undefined;
+    
+    this.lists[index] = { ...this.lists[index], ...updates };
+    return this.lists[index];
   }
 
   async deleteList(id: string): Promise<boolean> {
-    const deleted = this.lists.delete(id);
-    if (deleted) {
-      const tasks = Array.from(this.tasks.values());
-      for (const task of tasks) {
-        if (task.listId === id) {
-          await this.updateTask(task.id, { listId: null });
-        }
+    // First, update all tasks that belong to this list to have no list
+    this.tasks.forEach(task => {
+      if (task.listId === id) {
+        task.listId = null;
       }
-    }
-    return deleted;
+    });
+    
+    // Then delete the list
+    const index = this.lists.findIndex(list => list.id === id);
+    if (index === -1) return false;
+    
+    this.lists.splice(index, 1);
+    return true;
   }
 }
 
-export const storage = new MemStorage();
+export class DatabaseStorage implements IStorage {
+  private db: any;
+
+  constructor(db: any) {
+    this.db = db;
+  }
+
+  async getTasks(): Promise<Task[]> {
+    return await this.db.select().from(tasks);
+  }
+
+  async getTask(id: string): Promise<Task | undefined> {
+    const [task] = await this.db.select().from(tasks).where(eq(tasks.id, id));
+    return task || undefined;
+  }
+
+  async createTask(insertTask: InsertTask): Promise<Task> {
+    const [task] = await this.db
+      .insert(tasks)
+      .values(insertTask)
+      .returning();
+    return task;
+  }
+
+  async updateTask(id: string, updates: Partial<Task>): Promise<Task | undefined> {
+    const [task] = await this.db
+      .update(tasks)
+      .set(updates)
+      .where(eq(tasks.id, id))
+      .returning();
+    return task || undefined;
+  }
+
+  async deleteTask(id: string): Promise<boolean> {
+    const result = await this.db.delete(tasks).where(eq(tasks.id, id));
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  async getLists(): Promise<List[]> {
+    return await this.db.select().from(lists);
+  }
+
+  async getList(id: string): Promise<List | undefined> {
+    const [list] = await this.db.select().from(lists).where(eq(lists.id, id));
+    return list || undefined;
+  }
+
+  async createList(insertList: InsertList): Promise<List> {
+    const [list] = await this.db
+      .insert(lists)
+      .values(insertList)
+      .returning();
+    return list;
+  }
+
+  async updateList(id: string, updates: Partial<List>): Promise<List | undefined> {
+    const [list] = await this.db
+      .update(lists)
+      .set(updates)
+      .where(eq(lists.id, id))
+      .returning();
+    return list || undefined;
+  }
+
+  async deleteList(id: string): Promise<boolean> {
+    // First, update all tasks that belong to this list to have no list
+    await this.db
+      .update(tasks)
+      .set({ listId: null })
+      .where(eq(tasks.listId, id));
+    
+    // Then delete the list
+    const result = await this.db.delete(lists).where(eq(lists.id, id));
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
+}
+
+// Conditional storage initialization
+let storageInstance: IStorage | null = null;
+
+async function initializeStorage(): Promise<IStorage> {
+  if (!process.env.DATABASE_URL) {
+    console.warn("⚠️  DATABASE_URL not found. Using in-memory storage (MemStorage). Data will not persist between server restarts.");
+    return new MemStorage();
+  }
+
+  try {
+    // Only import db if DATABASE_URL is available
+    const { db } = await import("./db.js");
+    if (!db) {
+      throw new Error("Database instance is null");
+    }
+    return new DatabaseStorage(db);
+  } catch (error) {
+    console.error("Failed to initialize database connection:", error);
+    console.warn("⚠️  Falling back to in-memory storage (MemStorage). Data will not persist between server restarts.");
+    return new MemStorage();
+  }
+}
+
+// Initialize storage synchronously for cases where DATABASE_URL is not set
+function createStorageSync(): IStorage {
+  if (!process.env.DATABASE_URL) {
+    console.warn("⚠️  DATABASE_URL not found. Using in-memory storage (MemStorage). Data will not persist between server restarts.");
+    return new MemStorage();
+  }
+  
+  // If DATABASE_URL is set, we need to handle this differently
+  // Return a temporary instance that will be replaced
+  return new MemStorage();
+}
+
+export let storage: IStorage = createStorageSync();
+
+// Initialize proper storage if DATABASE_URL is available
+if (process.env.DATABASE_URL) {
+  initializeStorage().then(s => {
+    storage = s;
+  }).catch(error => {
+    console.error("Failed to initialize database storage:", error);
+    console.warn("⚠️  Using in-memory storage (MemStorage). Data will not persist between server restarts.");
+    storage = new MemStorage();
+  });
+}

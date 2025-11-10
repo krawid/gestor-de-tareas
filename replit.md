@@ -4,6 +4,30 @@
 Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante HTML semántico. Diseñada para ser completamente accesible con lectores de pantalla y navegación por teclado, sin uso excesivo de ARIA.
 
 ## Recent Changes
+- **2025-11-09**: Refactorización mayor de fecha/hora, persistencia y notificaciones
+  - **HTML semántico**: Corregido elemento `<main>` duplicado (SidebarInset ya usa `<main>`, App.tsx cambió a `<div>`)
+  - **Persistencia con PostgreSQL**:
+    - Migrado de almacenamiento en memoria (MemStorage) a base de datos PostgreSQL
+    - Implementación con Drizzle ORM (@neondatabase/serverless)
+    - Fallback automático a MemStorage si DATABASE_URL no está disponible
+    - Datos persisten entre sesiones y dispositivos
+  - **Selectores de fecha/hora accesibles** (estilo GOV.UK):
+    - Componente `DateTimePicker` con selectores separados para día, mes (nombres localizados), año
+    - Checkbox "Añadir hora específica" que muestra selectores de hora y minuto
+    - IDs únicos por instancia usando React `useId()` para evitar duplicados
+    - Totalmente accesible con NVDA (Chrome/Windows) y VoiceOver (Safari/iPhone)
+    - Eliminados inputs type="date" y type="time" problemáticos con lectores de pantalla
+  - **Sistema de notificaciones mejorado**:
+    - Reemplazado polling (setInterval cada 60s) por scheduler preciso con setTimeout
+    - Calcula timestamp exacto del próximo recordatorio y programa alarma al milisegundo
+    - Page Visibility API detecta cuando la página vuelve a estar visible y reactiva timers
+    - Catch-up inmediato de notificaciones vencidas (ventana de 90 segundos solo para catch-up, no para futuras)
+    - Deduplicación usando `lastNotifiedAt` Map por tarea (evita notificaciones repetidas)
+    - Función `updateNotificationSchedule()` se llama después de cada mutación (crear/editar/eliminar tarea)
+    - Banner contextual cuando hay tareas con recordatorios pero permisos bloqueados
+  - **Limpieza de código**:
+    - Eliminadas importaciones innecesarias (X de lucide-react en add-task-dialog)
+    - TypeScript types mejorados para evitar undefined en DateTimePicker
 - **2025-11-08 (tarde)**: Mejoras de accesibilidad en selectores de fecha/hora
   - **Campos separados**: Separación de datetime-local en dos inputs independientes para VoiceOver
     - Input type="date" etiquetado como "Fecha de vencimiento"
@@ -69,7 +93,9 @@ Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante 
 - Navegación completa por teclado (Tab, Enter, Escape)
 
 ### Backend
-- Express.js con almacenamiento en memoria
+- Express.js con base de datos PostgreSQL
+- Drizzle ORM para gestión de base de datos (@neondatabase/serverless)
+- Fallback a MemStorage si DATABASE_URL no está disponible
 - API RESTful para CRUD de tareas y listas
 - Validación con Zod
 
@@ -99,7 +125,11 @@ Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante 
   - Filtros: Todas/Completadas/Pendientes
   - Búsqueda global en tiempo real por título y descripción
   - Encabezado descriptivo indica vista activa
-- **Fechas de vencimiento**: Con indicadores de estado (vencido, hoy, futuro)
+- **Fechas de vencimiento**: 
+  - Selectores segmentados accesibles (día, mes, año, hora, minuto)
+  - Checkbox opcional "Añadir hora específica"
+  - Indicadores visuales de estado (vencido, hoy, futuro)
+  - Compatible con NVDA y VoiceOver
 - **Atajos de teclado**: N (nueva tarea), L (nueva lista), ? (ayuda), Escape (cerrar)
 - **Accesibilidad total**:
   - HTML semántico (h1, h2, nav, main, form, label), uso mínimo de ARIA
@@ -107,4 +137,5 @@ Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante 
   - aria-current en elementos activos
   - Notificaciones toast con región aria-live dedicada para NVDA
   - Mensajes descriptivos y contextuales en todas las acciones
-  - Completamente accesible con lectores de pantalla (probado con NVDA en Chrome/Windows)
+  - Completamente accesible con lectores de pantalla
+  - Probado con NVDA (Chrome/Windows) y VoiceOver (Safari/iPhone)

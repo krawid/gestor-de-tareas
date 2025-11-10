@@ -25,7 +25,8 @@ import type { Task, InsertTask, InsertList, List } from "@shared/schema";
 import { 
   startNotificationService, 
   stopNotificationService, 
-  requestNotificationPermission 
+  requestNotificationPermission,
+  updateNotificationSchedule
 } from "@/lib/notificationService";
 
 interface HomeProps {
@@ -135,6 +136,7 @@ const Home = forwardRef<HomeRef, HomeProps>(
       },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+        updateNotificationSchedule();
         toast({
           title: "Tarea creada",
           description: "La tarea se ha añadido correctamente",
@@ -155,6 +157,7 @@ const Home = forwardRef<HomeRef, HomeProps>(
       },
       onSuccess: (_, variables) => {
         queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+        updateNotificationSchedule();
         
         // Si se está actualizando el estado de completado, usar mensaje específico
         if (variables.data.completed !== undefined) {
@@ -187,6 +190,7 @@ const Home = forwardRef<HomeRef, HomeProps>(
       },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+        updateNotificationSchedule();
         toast({
           title: "Tarea eliminada",
           description: "La tarea se ha eliminado correctamente",

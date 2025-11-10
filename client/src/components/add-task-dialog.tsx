@@ -21,7 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { DateTimePicker } from "@/components/date-time-picker";
 
 
 interface AddTaskDialogProps {
@@ -134,125 +134,47 @@ export function AddTaskDialog({ open, onOpenChange, onAdd, lists }: AddTaskDialo
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="priority"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel htmlFor="task-priority">Prioridad</FormLabel>
-                    <FormControl>
-                      <select
-                        id="task-priority"
-                        {...field}
-                        value={field.value || 0}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
-                        className="w-full text-base border border-input rounded-md px-3 py-2 bg-background"
-                        data-testid="select-task-priority"
-                      >
-                        <option value="0">Ninguna</option>
-                        <option value="1">Baja</option>
-                        <option value="2">Media</option>
-                        <option value="3">Alta</option>
-                      </select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <FormField
+              control={form.control}
+              name="priority"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel htmlFor="task-priority">Prioridad</FormLabel>
+                  <FormControl>
+                    <select
+                      id="task-priority"
+                      {...field}
+                      value={field.value || 0}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
+                      className="w-full text-base border border-input rounded-md px-3 py-2 bg-background"
+                      data-testid="select-task-priority"
+                    >
+                      <option value="0">Ninguna</option>
+                      <option value="1">Baja</option>
+                      <option value="2">Media</option>
+                      <option value="3">Alta</option>
+                    </select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              <FormField
-                control={form.control}
-                name="dueDate"
-                render={({ field }) => {
-                  // Derivar valores directamente del field.value
-                  const currentDate = field.value ? new Date(field.value) : null;
-                  const dateValue = currentDate 
-                    ? `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`
-                    : "";
-                  const timeValue = currentDate
-                    ? `${String(currentDate.getHours()).padStart(2, '0')}:${String(currentDate.getMinutes()).padStart(2, '0')}`
-                    : "";
-
-                  const updateDateTime = (newDateStr: string, newTimeStr: string) => {
-                    if (!newDateStr) {
-                      field.onChange(null);
-                      return;
-                    }
-                    
-                    // Parsear la fecha
-                    const [year, month, day] = newDateStr.split('-').map(Number);
-                    
-                    // Parsear la hora (o usar medianoche si no hay hora)
-                    const [hours, minutes] = newTimeStr 
-                      ? newTimeStr.split(':').map(Number)
-                      : [0, 0];
-                    
-                    // Construir el Date en zona horaria local
-                    const newDate = new Date(year, month - 1, day, hours, minutes);
-                    field.onChange(newDate);
-                  };
-
-                  return (
-                    <div className="space-y-4">
-                      <FormItem>
-                        <FormLabel htmlFor="task-due-date">Fecha de vencimiento</FormLabel>
-                        <div className="flex gap-2">
-                          <FormControl>
-                            <Input
-                              id="task-due-date"
-                              type="date"
-                              value={dateValue}
-                              onChange={(e) => {
-                                updateDateTime(e.target.value, timeValue);
-                              }}
-                              className="text-base"
-                              data-testid="input-task-due-date"
-                            />
-                          </FormControl>
-                          {dueDateValue && (
-                            <Button
-                              type="button"
-                              size="icon"
-                              variant="ghost"
-                              onClick={() => {
-                                field.onChange(null);
-                              }}
-                              aria-label="Limpiar fecha de vencimiento"
-                              data-testid="button-clear-due-date"
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-
-                      {dateValue && (
-                        <FormItem>
-                          <FormLabel htmlFor="task-due-time">Hora de vencimiento</FormLabel>
-                          <FormControl>
-                            <Input
-                              id="task-due-time"
-                              type="time"
-                              value={timeValue}
-                              onChange={(e) => {
-                                updateDateTime(dateValue, e.target.value);
-                              }}
-                              className="text-base"
-                              data-testid="input-task-due-time"
-                            />
-                          </FormControl>
-                          <p className="text-sm text-muted-foreground">
-                            Opcional. Si no especificas hora, será medianoche (00:00)
-                          </p>
-                        </FormItem>
-                      )}
-                    </div>
-                  );
-                }}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="dueDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <DateTimePicker
+                      value={field.value || null}
+                      onChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}
