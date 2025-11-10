@@ -8,6 +8,7 @@ interface DateTimePickerProps {
   dateLabel?: string;
   timeLabel?: string;
   includeTimeLabel?: string;
+  includeDateLabel?: string;
   dateHintText?: string;
 }
 
@@ -22,10 +23,12 @@ export function DateTimePicker({
   dateLabel = "Fecha de vencimiento",
   timeLabel = "Hora",
   includeTimeLabel = "Añadir hora específica",
+  includeDateLabel = "Añadir fecha de vencimiento",
   dateHintText = "Selecciona día, mes y año"
 }: DateTimePickerProps) {
   // Generate unique IDs for this instance
   const baseId = useId();
+  const includeDateId = `${baseId}-include-date-checkbox`;
   const dayId = `${baseId}-day-select`;
   const monthId = `${baseId}-month-select`;
   const yearId = `${baseId}-year-select`;
@@ -36,6 +39,7 @@ export function DateTimePicker({
   const timeHintId = `${baseId}-time-hint`;
 
   // Estado local para los selectores
+  const [includeDate, setIncludeDate] = useState(false);
   const [day, setDay] = useState<string>("");
   const [month, setMonth] = useState<string>("");
   const [year, setYear] = useState<string>("");
@@ -46,6 +50,7 @@ export function DateTimePicker({
   // Sincronizar estado local con el valor prop
   useEffect(() => {
     if (value) {
+      setIncludeDate(true);
       const d = new Date(value);
       setDay(String(d.getDate()));
       setMonth(String(d.getMonth() + 1));
@@ -62,6 +67,7 @@ export function DateTimePicker({
         setMinute("00");
       }
     } else {
+      setIncludeDate(false);
       setDay("");
       setMonth("");
       setYear("");
@@ -108,17 +114,47 @@ export function DateTimePicker({
 
   return (
     <div className="space-y-4">
-      <fieldset className="space-y-3">
-        <legend className="text-sm font-medium">
-          {dateLabel}
-        </legend>
-        {dateHintText && (
-          <p className="text-sm text-muted-foreground" id={dateHintId}>
-            {dateHintText}
-          </p>
-        )}
-        
-        <div className="grid grid-cols-3 gap-3">
+      {/* Checkbox para incluir fecha */}
+      <div className="flex items-center space-x-2">
+        <Checkbox
+          id={includeDateId}
+          checked={includeDate}
+          onCheckedChange={(checked) => {
+            setIncludeDate(!!checked);
+            if (!checked) {
+              // Si desmarcamos, limpiar todo y devolver null
+              setDay("");
+              setMonth("");
+              setYear("");
+              setIncludeTime(false);
+              setHour("00");
+              setMinute("00");
+              onChange(null);
+            }
+          }}
+          data-testid="checkbox-include-date"
+        />
+        <label
+          htmlFor={includeDateId}
+          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        >
+          {includeDateLabel}
+        </label>
+      </div>
+
+      {/* Selectores de fecha (solo si includeDate está marcado) */}
+      {includeDate && (
+        <fieldset className="space-y-3">
+          <legend className="text-sm font-medium">
+            {dateLabel}
+          </legend>
+          {dateHintText && (
+            <p className="text-sm text-muted-foreground" id={dateHintId}>
+              {dateHintText}
+            </p>
+          )}
+          
+          <div className="grid grid-cols-3 gap-3">
           {/* Día */}
           <div>
             <FormLabel htmlFor={dayId} className="text-sm">
@@ -194,10 +230,11 @@ export function DateTimePicker({
             </select>
           </div>
         </div>
-      </fieldset>
+        </fieldset>
+      )}
 
       {/* Checkbox para incluir hora */}
-      {day && month && year && (
+      {includeDate && day && month && year && (
         <div className="flex items-center space-x-2">
           <Checkbox
             id={includeTimeId}
@@ -223,7 +260,7 @@ export function DateTimePicker({
       )}
 
       {/* Selectores de hora (solo si includeTime está marcado) */}
-      {includeTime && day && month && year && (
+      {includeDate && includeTime && day && month && year && (
         <fieldset className="space-y-3">
           <legend className="text-sm font-medium">
             {timeLabel}

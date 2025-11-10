@@ -82,6 +82,20 @@ const Home = forwardRef<HomeRef, HomeProps>(
       filteredTasks = filteredTasks.filter(task => !task.completed);
     }
 
+    // Ordenar tareas: primero las que tienen fecha (ordenadas por fecha Y hora ascendente), luego las sin fecha
+    const tasksWithDate = filteredTasks
+      .filter(task => task.dueDate !== null)
+      .sort((a, b) => {
+        // getTime() incluye fecha completa con horas, minutos, segundos, etc.
+        const dateA = new Date(a.dueDate!).getTime();
+        const dateB = new Date(b.dueDate!).getTime();
+        return dateA - dateB; // Ascendente: las más próximas primero
+      });
+    
+    const tasksWithoutDate = filteredTasks.filter(task => task.dueDate === null);
+    
+    filteredTasks = [...tasksWithDate, ...tasksWithoutDate];
+
     const createTaskMutation = useMutation({
       mutationFn: async (data: InsertTask) => {
         return await apiRequest("POST", "/api/tasks", data);
