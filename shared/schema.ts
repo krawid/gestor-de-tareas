@@ -17,7 +17,6 @@ export const tasks = pgTable("tasks", {
   priority: integer("priority").notNull().default(0),
   listId: varchar("list_id").references(() => lists.id),
   dueDate: timestamp("due_date"),
-  reminderMinutes: integer("reminder_minutes"),
 });
 
 export const insertListSchema = createInsertSchema(lists, {
