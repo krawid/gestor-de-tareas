@@ -3,8 +3,11 @@ import type { Task } from "@shared/schema";
 // Almacenamos el timestamp de la última notificación mostrada por tarea
 const lastNotifiedAt = new Map<string, number>();
 
-// Timer activo
-let activeTimer: number | null = null;
+// Intervalo de verificación (1 minuto)
+const CHECK_INTERVAL_MS = 60 * 1000;
+
+// ID del intervalo activo
+let activeInterval: number | null = null;
 
 // Función para obtener tareas (se setea desde fuera)
 let getTasksFn: (() => Task[]) | null = null;
@@ -77,13 +80,15 @@ function showTaskNotification(task: Task): void {
 }
 
 /**
- * Calcula el próximo recordatorio que debe activarse
- * @param tasks Lista de tareas
- * @returns El timestamp del próximo recordatorio, o null si no hay ninguno
+ * Verifica y procesa recordatorios que deben mostrarse
  */
-function getNextReminderTime(tasks: Task[]): { time: number; task: Task } | null {
+function checkAndNotifyReminders(): void {
+  if (!getTasksFn || Notification.permission !== "granted") {
+    return;
+  }
+
+  const tasks = getTasksFn();
   const now = Date.now();
-  let nextReminder: { time: number; task: Task } | null = null;
 
   tasks.forEach((task) => {
     // Ignorar tareas completadas
@@ -95,57 +100,16 @@ function getNextReminderTime(tasks: Task[]): { time: number; task: Task } | null
     const dueDate = new Date(task.dueDate);
     const reminderTime = dueDate.getTime() - task.reminderMinutes * 60 * 1000;
 
-    // Ignorar recordatorios que ya pasaron hace más de 90 segundos
-    if (reminderTime < now - 90 * 1000) return;
+    // Ventana de notificación: entre 90 segundos antes y ahora
+    // Esto permite catch-up de notificaciones perdidas sin ser demasiado agresivo
+    const notificationWindow = 90 * 1000; // 90 segundos
+    const timeSinceReminder = now - reminderTime;
 
-    // Si el recordatorio es futuro o reciente (últimos 90 segundos)
-    if (!nextReminder || reminderTime < nextReminder.time) {
-      nextReminder = { time: reminderTime, task };
+    // Si el recordatorio ya pasó pero está dentro de la ventana de catch-up
+    if (timeSinceReminder >= 0 && timeSinceReminder <= notificationWindow) {
+      showTaskNotification(task);
     }
   });
-
-  return nextReminder;
-}
-
-/**
- * Programa el próximo recordatorio
- */
-function scheduleNextReminder(): void {
-  // Cancelar timer activo si existe
-  if (activeTimer !== null) {
-    window.clearTimeout(activeTimer);
-    activeTimer = null;
-  }
-
-  if (!getTasksFn) return;
-
-  const tasks = getTasksFn();
-  const nextReminder = getNextReminderTime(tasks);
-
-  if (!nextReminder) return;
-
-  const now = Date.now();
-  const timeUntilReminder = nextReminder.time - now;
-
-  // Solo disparar notificaciones que ya vencieron (catch-up)
-  // NO disparar notificaciones futuras, incluso si están dentro de 90 segundos
-  if (timeUntilReminder <= 0 && Notification.permission === "granted") {
-    showTaskNotification(nextReminder.task);
-  }
-
-  // Si el recordatorio es futuro, programar un setTimeout
-  if (timeUntilReminder > 0) {
-    activeTimer = window.setTimeout(() => {
-      if (Notification.permission === "granted") {
-        showTaskNotification(nextReminder.task);
-      }
-      // Programar el siguiente
-      scheduleNextReminder();
-    }, timeUntilReminder);
-  } else {
-    // Si ya pasó, programar el siguiente inmediatamente
-    scheduleNextReminder();
-  }
 }
 
 /**
@@ -153,8 +117,8 @@ function scheduleNextReminder(): void {
  */
 function handleVisibilityChange(): void {
   if (document.visibilityState === "visible") {
-    // Cuando la página vuelve a estar visible, reprogramar
-    scheduleNextReminder();
+    // Cuando la página vuelve a estar visible, verificar inmediatamente
+    checkAndNotifyReminders();
   }
 }
 
@@ -171,8 +135,14 @@ export function startNotificationService(getTasks: () => Task[]): void {
   // Guardar la función para obtener tareas
   getTasksFn = getTasks;
 
-  // Programar el primer recordatorio
-  scheduleNextReminder();
+  // Verificar inmediatamente
+  checkAndNotifyReminders();
+
+  // Configurar intervalo de verificación
+  if (activeInterval !== null) {
+    window.clearInterval(activeInterval);
+  }
+  activeInterval = window.setInterval(checkAndNotifyReminders, CHECK_INTERVAL_MS);
 
   // Escuchar cambios de visibilidad
   document.addEventListener("visibilitychange", handleVisibilityChange);
@@ -182,9 +152,9 @@ export function startNotificationService(getTasks: () => Task[]): void {
  * Detiene el servicio de notificaciones
  */
 export function stopNotificationService(): void {
-  if (activeTimer !== null) {
-    window.clearTimeout(activeTimer);
-    activeTimer = null;
+  if (activeInterval !== null) {
+    window.clearInterval(activeInterval);
+    activeInterval = null;
   }
   
   document.removeEventListener("visibilitychange", handleVisibilityChange);
@@ -196,5 +166,6 @@ export function stopNotificationService(): void {
  * Llama a esta función después de crear, editar o eliminar tareas
  */
 export function updateNotificationSchedule(): void {
-  scheduleNextReminder();
+  // Con el sistema de polling, solo verificamos inmediatamente
+  checkAndNotifyReminders();
 }

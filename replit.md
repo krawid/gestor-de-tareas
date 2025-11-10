@@ -17,14 +17,14 @@ Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante 
     - IDs únicos por instancia usando React `useId()` para evitar duplicados
     - Totalmente accesible con NVDA (Chrome/Windows) y VoiceOver (Safari/iPhone)
     - Eliminados inputs type="date" y type="time" problemáticos con lectores de pantalla
-  - **Sistema de notificaciones mejorado**:
-    - Reemplazado polling (setInterval cada 60s) por scheduler preciso con setTimeout
-    - Calcula timestamp exacto del próximo recordatorio y programa alarma al milisegundo
-    - Page Visibility API detecta cuando la página vuelve a estar visible y reactiva timers
-    - Catch-up inmediato de notificaciones vencidas (ventana de 90 segundos solo para catch-up, no para futuras)
-    - Deduplicación usando `lastNotifiedAt` Map por tarea (evita notificaciones repetidas)
-    - Función `updateNotificationSchedule()` se llama después de cada mutación (crear/editar/eliminar tarea)
+  - **Sistema de notificaciones robusto**:
+    - Sistema de polling con setInterval (cada 60 segundos)
+    - Ventana de catch-up de 90 segundos para notificaciones perdidas
+    - Page Visibility API detecta cuando la página vuelve a estar visible y verifica inmediatamente
+    - Deduplicación usando `lastNotifiedAt` Map por tarea (evita notificaciones repetidas en 2 minutos)
+    - Función `updateNotificationSchedule()` verifica inmediatamente después de mutaciones
     - Banner contextual cuando hay tareas con recordatorios pero permisos bloqueados
+    - Sin bucles infinitos ni recursión (código simple y mantenible)
   - **Limpieza de código**:
     - Eliminadas importaciones innecesarias (X de lucide-react en add-task-dialog)
     - TypeScript types mejorados para evitar undefined en DateTimePicker
