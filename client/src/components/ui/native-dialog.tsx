@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useId } from "react";
 import { X } from "lucide-react";
 
 interface NativeDialogProps {
@@ -11,6 +11,7 @@ interface NativeDialogProps {
 
 export function NativeDialog({ open, onOpenChange, children, title, "data-testid": testId }: NativeDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -57,12 +58,12 @@ export function NativeDialog({ open, onOpenChange, children, title, "data-testid
       onClose={handleClose}
       className="backdrop:bg-black/80 bg-background rounded-lg shadow-lg p-6 max-w-lg w-full border border-border"
       data-testid={testId}
-      aria-labelledby={title ? "dialog-title" : undefined}
+      aria-labelledby={title ? titleId : undefined}
     >
       <div className="flex flex-col space-y-4">
         {title && (
           <div className="flex items-start justify-between">
-            <h2 id="dialog-title" className="text-lg font-semibold">
+            <h2 id={titleId} className="text-lg font-semibold">
               {title}
             </h2>
             <button
