@@ -1,7 +1,4 @@
-import { useState } from "react";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { insertTaskSchema } from "@shared/schema";
+import { useState, useEffect } from "react";
 import type { InsertTask, List } from "@shared/schema";
 import {
   Dialog,
@@ -10,8 +7,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { NativeInput } from "@/components/ui/native-input";
-import { NativeTextarea } from "@/components/ui/native-textarea";
 import { Button } from "@/components/ui/button";
 import { DateTimePicker } from "@/components/date-time-picker";
 
@@ -24,21 +19,39 @@ interface AddTaskDialogProps {
 }
 
 export function AddTaskDialog({ open, onOpenChange, onAdd, lists }: AddTaskDialogProps) {
-  const form = useForm<InsertTask>({
-    resolver: zodResolver(insertTaskSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      completed: false,
-      priority: 0,
-      listId: null,
-      dueDate: null,
-    },
-  });
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [priority, setPriority] = useState(0);
+  const [listId, setListId] = useState<string | null>(null);
+  const [dueDate, setDueDate] = useState<Date | null>(null);
 
-  const handleSubmit = (data: InsertTask) => {
-    onAdd(data);
-    form.reset();
+  // Reset form when dialog closes
+  useEffect(() => {
+    if (!open) {
+      setTitle("");
+      setDescription("");
+      setPriority(0);
+      setListId(null);
+      setDueDate(null);
+    }
+  }, [open]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!title.trim()) {
+      return;
+    }
+
+    onAdd({
+      title: title.trim(),
+      description: description.trim() || "",
+      completed: false,
+      priority,
+      listId,
+      dueDate,
+    });
+    
     onOpenChange(false);
   };
 
@@ -49,149 +62,80 @@ export function AddTaskDialog({ open, onOpenChange, onAdd, lists }: AddTaskDialo
           <DialogTitle>Nueva tarea</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="task-title" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            <label htmlFor="task-title" className="text-sm font-medium leading-none">
               Título
             </label>
-            <Controller
-              control={form.control}
-              name="title"
-              render={({ field, fieldState }) => (
-                <>
-                  <NativeInput
-                    id="task-title"
-                    {...field}
-                    placeholder="¿Qué necesitas hacer?"
-                    className="text-base mt-2"
-                    data-testid="input-task-title"
-                    required
-                    autoFocus
-                    aria-invalid={fieldState.error ? "true" : "false"}
-                  />
-                  {fieldState.error && (
-                    <p className="text-sm font-medium text-destructive mt-1">
-                      {fieldState.error.message}
-                    </p>
-                  )}
-                </>
-              )}
+            <input
+              type="text"
+              id="task-title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="¿Qué necesitas hacer?"
+              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mt-2"
+              data-testid="input-task-title"
+              required
+              autoFocus
             />
           </div>
 
           <div>
-            <label htmlFor="task-description" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            <label htmlFor="task-description" className="text-sm font-medium leading-none">
               Descripción (opcional)
             </label>
-            <Controller
-              control={form.control}
-              name="description"
-              render={({ field, fieldState }) => (
-                <>
-                  <NativeTextarea
-                    id="task-description"
-                    {...field}
-                    value={field.value || ""}
-                    placeholder="Añade detalles adicionales..."
-                    className="text-base resize-none mt-2"
-                    rows={3}
-                    data-testid="input-task-description"
-                    aria-invalid={fieldState.error ? "true" : "false"}
-                  />
-                  {fieldState.error && (
-                    <p className="text-sm font-medium text-destructive mt-1">
-                      {fieldState.error.message}
-                    </p>
-                  )}
-                </>
-              )}
+            <textarea
+              id="task-description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Añade detalles adicionales..."
+              className="flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 resize-none mt-2"
+              rows={3}
+              data-testid="input-task-description"
             />
           </div>
 
           <div>
-            <label htmlFor="task-list" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            <label htmlFor="task-list" className="text-sm font-medium leading-none">
               Asignar a lista
             </label>
-            <Controller
-              control={form.control}
-              name="listId"
-              render={({ field, fieldState }) => (
-                <>
-                  <select
-                    id="task-list"
-                    {...field}
-                    value={field.value || ""}
-                    onChange={(e) => field.onChange(e.target.value || null)}
-                    className="w-full text-base border border-input rounded-md px-3 py-2 bg-background mt-2"
-                    data-testid="select-task-list"
-                    aria-invalid={fieldState.error ? "true" : "false"}
-                  >
-                    <option value="">Sin lista</option>
-                    {lists.map((list) => (
-                      <option key={list.id} value={list.id}>
-                        {list.name}
-                      </option>
-                    ))}
-                  </select>
-                  {fieldState.error && (
-                    <p className="text-sm font-medium text-destructive mt-1">
-                      {fieldState.error.message}
-                    </p>
-                  )}
-                </>
-              )}
-            />
+            <select
+              id="task-list"
+              value={listId || ""}
+              onChange={(e) => setListId(e.target.value || null)}
+              className="w-full text-base border border-input rounded-md px-3 py-2 bg-background mt-2"
+              data-testid="select-task-list"
+            >
+              <option value="">Sin lista</option>
+              {lists.map((list) => (
+                <option key={list.id} value={list.id}>
+                  {list.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div>
-            <label htmlFor="task-priority" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            <label htmlFor="task-priority" className="text-sm font-medium leading-none">
               Prioridad
             </label>
-            <Controller
-              control={form.control}
-              name="priority"
-              render={({ field, fieldState }) => (
-                <>
-                  <select
-                    id="task-priority"
-                    {...field}
-                    value={field.value || 0}
-                    onChange={(e) => field.onChange(Number(e.target.value))}
-                    className="w-full text-base border border-input rounded-md px-3 py-2 bg-background mt-2"
-                    data-testid="select-task-priority"
-                    aria-invalid={fieldState.error ? "true" : "false"}
-                  >
-                    <option value="0">Ninguna</option>
-                    <option value="1">Baja</option>
-                    <option value="2">Media</option>
-                    <option value="3">Alta</option>
-                  </select>
-                  {fieldState.error && (
-                    <p className="text-sm font-medium text-destructive mt-1">
-                      {fieldState.error.message}
-                    </p>
-                  )}
-                </>
-              )}
-            />
+            <select
+              id="task-priority"
+              value={priority}
+              onChange={(e) => setPriority(Number(e.target.value))}
+              className="w-full text-base border border-input rounded-md px-3 py-2 bg-background mt-2"
+              data-testid="select-task-priority"
+            >
+              <option value="0">Ninguna</option>
+              <option value="1">Baja</option>
+              <option value="2">Media</option>
+              <option value="3">Alta</option>
+            </select>
           </div>
 
-          <Controller
-            control={form.control}
-            name="dueDate"
-            render={({ field, fieldState }) => (
-              <>
-                <DateTimePicker
-                  value={field.value || null}
-                  onChange={field.onChange}
-                />
-                {fieldState.error && (
-                  <p className="text-sm font-medium text-destructive mt-1">
-                    {fieldState.error.message}
-                  </p>
-                )}
-              </>
-            )}
+          <DateTimePicker
+            value={dueDate}
+            onChange={setDueDate}
           />
 
           <DialogFooter>

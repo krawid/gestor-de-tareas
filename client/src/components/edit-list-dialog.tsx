@@ -1,6 +1,4 @@
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { insertListSchema } from "@shared/schema";
+import { useState, useEffect } from "react";
 import type { InsertList, List } from "@shared/schema";
 import {
   Dialog,
@@ -9,10 +7,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { NativeInput } from "@/components/ui/native-input";
-import { NativeTextarea } from "@/components/ui/native-textarea";
 import { Button } from "@/components/ui/button";
-import { useEffect } from "react";
 
 interface EditListDialogProps {
   list: List | null;
@@ -31,30 +26,32 @@ const colors = [
 ];
 
 export function EditListDialog({ list, open, onOpenChange, onUpdate }: EditListDialogProps) {
-  const form = useForm<InsertList>({
-    resolver: zodResolver(insertListSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-      color: "#3b82f6",
-    },
-  });
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [color, setColor] = useState("#3b82f6");
 
   useEffect(() => {
     if (list) {
-      form.reset({
-        name: list.name,
-        description: list.description || "",
-        color: list.color,
-      });
+      setName(list.name);
+      setDescription(list.description || "");
+      setColor(list.color);
     }
-  }, [list, form]);
+  }, [list]);
 
-  const handleSubmit = (data: InsertList) => {
-    if (list) {
-      onUpdate(list.id, data);
-      onOpenChange(false);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!list || !name.trim()) {
+      return;
     }
+
+    onUpdate(list.id, {
+      name: name.trim(),
+      description: description.trim() || "",
+      color,
+    });
+    
+    onOpenChange(false);
   };
 
   if (!list) return null;
@@ -66,96 +63,58 @@ export function EditListDialog({ list, open, onOpenChange, onUpdate }: EditListD
           <DialogTitle>Editar lista</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="edit-list-name" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            <label htmlFor="edit-list-name" className="text-sm font-medium leading-none">
               Nombre de la lista
             </label>
-            <Controller
-              control={form.control}
-              name="name"
-              render={({ field, fieldState }) => (
-                <>
-                  <NativeInput
-                    id="edit-list-name"
-                    {...field}
-                    placeholder="Ej: Trabajo, Personal, Compras"
-                    className="text-base mt-2"
-                    data-testid="input-edit-list-name"
-                    required
-                    aria-invalid={fieldState.error ? "true" : "false"}
-                  />
-                  {fieldState.error && (
-                    <p className="text-sm font-medium text-destructive mt-1">
-                      {fieldState.error.message}
-                    </p>
-                  )}
-                </>
-              )}
+            <input
+              type="text"
+              id="edit-list-name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Ej: Trabajo, Personal, Compras"
+              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mt-2"
+              data-testid="input-edit-list-name"
+              required
             />
           </div>
 
           <div>
-            <label id="edit-list-color-label" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            <label id="edit-list-color-label" className="text-sm font-medium leading-none">
               Color
             </label>
-            <Controller
-              control={form.control}
-              name="color"
-              render={({ field, fieldState }) => (
-                <>
-                  <div className="flex gap-2 flex-wrap mt-2" role="group" aria-labelledby="edit-list-color-label">
-                    {colors.map((color) => (
-                      <button
-                        key={color.value}
-                        type="button"
-                        onClick={() => field.onChange(color.value)}
-                        className={`w-10 h-10 rounded-md border-2 transition-all ${
-                          field.value === color.value
-                            ? "border-foreground scale-110"
-                            : "border-transparent"
-                        }`}
-                        style={{ backgroundColor: color.value }}
-                        aria-label={`${color.label}${field.value === color.value ? ', seleccionado' : ''}`}
-                        aria-pressed={field.value === color.value}
-                        data-testid={`button-edit-color-${color.value}`}
-                      />
-                    ))}
-                  </div>
-                  {fieldState.error && (
-                    <p className="text-sm font-medium text-destructive mt-1">
-                      {fieldState.error.message}
-                    </p>
-                  )}
-                </>
-              )}
-            />
+            <div className="flex gap-2 flex-wrap mt-2" role="group" aria-labelledby="edit-list-color-label">
+              {colors.map((c) => (
+                <button
+                  key={c.value}
+                  type="button"
+                  onClick={() => setColor(c.value)}
+                  className={`w-10 h-10 rounded-md border-2 transition-all ${
+                    color === c.value
+                      ? "border-foreground scale-110"
+                      : "border-transparent"
+                  }`}
+                  style={{ backgroundColor: c.value }}
+                  aria-label={`${c.label}${color === c.value ? ', seleccionado' : ''}`}
+                  aria-pressed={color === c.value}
+                  data-testid={`button-edit-color-${c.value}`}
+                />
+              ))}
+            </div>
           </div>
 
           <div>
-            <label htmlFor="edit-list-description" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            <label htmlFor="edit-list-description" className="text-sm font-medium leading-none">
               Descripción (opcional)
             </label>
-            <Controller
-              control={form.control}
-              name="description"
-              render={({ field, fieldState }) => (
-                <>
-                  <NativeTextarea
-                    id="edit-list-description"
-                    {...field}
-                    placeholder="Puedes usar Markdown: **negrita**, *cursiva*, [enlaces](https://ejemplo.com), listas, etc."
-                    className="text-base min-h-[100px] mt-2"
-                    data-testid="textarea-edit-list-description"
-                    aria-invalid={fieldState.error ? "true" : "false"}
-                  />
-                  {fieldState.error && (
-                    <p className="text-sm font-medium text-destructive mt-1">
-                      {fieldState.error.message}
-                    </p>
-                  )}
-                </>
-              )}
+            <textarea
+              id="edit-list-description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Puedes usar Markdown: **negrita**, *cursiva*, [enlaces](https://ejemplo.com), listas, etc."
+              className="flex min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mt-2"
+              data-testid="textarea-edit-list-description"
             />
           </div>
 

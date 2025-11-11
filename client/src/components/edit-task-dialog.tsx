@@ -1,7 +1,4 @@
 import { useEffect, useState } from "react";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import {
   Dialog,
   DialogContent,
@@ -9,8 +6,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { NativeInput } from "@/components/ui/native-input";
-import { NativeTextarea } from "@/components/ui/native-textarea";
 import { Button } from "@/components/ui/button";
 import { DateTimePicker } from "@/components/date-time-picker";
 import type { Task, List } from "@shared/schema";
@@ -23,49 +18,43 @@ interface EditTaskDialogProps {
   onSave: (taskId: string, data: Partial<Task>) => void;
 }
 
-const editTaskSchema = z.object({
-  title: z.string().min(1, "El título es requerido"),
-  description: z.string().optional(),
-  priority: z.number().min(0).max(3),
-  listId: z.string().nullable(),
-  dueDate: z.date().nullable(),
-});
-
-type EditTaskForm = z.infer<typeof editTaskSchema>;
-
 export function EditTaskDialog({ task, open, onOpenChange, onSave }: EditTaskDialogProps) {
   const { data: lists = [] } = useQuery<List[]>({
     queryKey: ["/api/lists"],
   });
 
-  const form = useForm<EditTaskForm>({
-    resolver: zodResolver(editTaskSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      priority: 0,
-      listId: null,
-      dueDate: null,
-    },
-  });
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [priority, setPriority] = useState(0);
+  const [listId, setListId] = useState<string | null>(null);
+  const [dueDate, setDueDate] = useState<Date | null>(null);
 
   useEffect(() => {
     if (task) {
-      form.reset({
-        title: task.title,
-        description: task.description || "",
-        priority: task.priority,
-        listId: task.listId,
-        dueDate: task.dueDate ? new Date(task.dueDate) : null,
-      });
+      setTitle(task.title);
+      setDescription(task.description || "");
+      setPriority(task.priority);
+      setListId(task.listId);
+      setDueDate(task.dueDate ? new Date(task.dueDate) : null);
     }
-  }, [task, form]);
+  }, [task]);
 
-  const handleSubmit = (data: EditTaskForm) => {
-    if (task) {
-      onSave(task.id, data);
-      onOpenChange(false);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!task || !title.trim()) {
+      return;
     }
+
+    onSave(task.id, {
+      title: title.trim(),
+      description: description.trim() || "",
+      priority,
+      listId,
+      dueDate,
+    });
+    
+    onOpenChange(false);
   };
 
   return (
@@ -75,145 +64,77 @@ export function EditTaskDialog({ task, open, onOpenChange, onSave }: EditTaskDia
           <DialogTitle>Editar tarea</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="title" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            <label htmlFor="title" className="text-sm font-medium leading-none">
               Título
             </label>
-            <Controller
-              control={form.control}
-              name="title"
-              render={({ field, fieldState }) => (
-                <>
-                  <NativeInput
-                    id="title"
-                    {...field}
-                    className="text-base mt-2"
-                    data-testid="input-edit-title"
-                    required
-                    aria-invalid={fieldState.error ? "true" : "false"}
-                  />
-                  {fieldState.error && (
-                    <p className="text-sm font-medium text-destructive mt-1">
-                      {fieldState.error.message}
-                    </p>
-                  )}
-                </>
-              )}
+            <input
+              type="text"
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 mt-2"
+              data-testid="input-edit-title"
+              required
             />
           </div>
 
           <div>
-            <label htmlFor="description" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            <label htmlFor="description" className="text-sm font-medium leading-none">
               Descripción
             </label>
-            <Controller
-              control={form.control}
-              name="description"
-              render={({ field, fieldState }) => (
-                <>
-                  <NativeTextarea
-                    id="description"
-                    {...field}
-                    rows={3}
-                    className="resize-none text-base mt-2"
-                    data-testid="input-edit-description"
-                    aria-invalid={fieldState.error ? "true" : "false"}
-                  />
-                  {fieldState.error && (
-                    <p className="text-sm font-medium text-destructive mt-1">
-                      {fieldState.error.message}
-                    </p>
-                  )}
-                </>
-              )}
+            <textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              className="flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 resize-none mt-2"
+              data-testid="input-edit-description"
             />
           </div>
 
           <div>
-            <label htmlFor="priority" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            <label htmlFor="priority" className="text-sm font-medium leading-none">
               Prioridad
             </label>
-            <Controller
-              control={form.control}
-              name="priority"
-              render={({ field, fieldState }) => (
-                <>
-                  <select
-                    id="priority"
-                    {...field}
-                    value={field.value || 0}
-                    onChange={(e) => field.onChange(Number(e.target.value))}
-                    className="w-full text-base border border-input rounded-md px-3 py-2 bg-background mt-2"
-                    data-testid="select-priority"
-                    aria-invalid={fieldState.error ? "true" : "false"}
-                  >
-                    <option value="0">Ninguna</option>
-                    <option value="1">Baja</option>
-                    <option value="2">Media</option>
-                    <option value="3">Alta</option>
-                  </select>
-                  {fieldState.error && (
-                    <p className="text-sm font-medium text-destructive mt-1">
-                      {fieldState.error.message}
-                    </p>
-                  )}
-                </>
-              )}
-            />
+            <select
+              id="priority"
+              value={priority}
+              onChange={(e) => setPriority(Number(e.target.value))}
+              className="w-full text-base border border-input rounded-md px-3 py-2 bg-background mt-2"
+              data-testid="select-priority"
+            >
+              <option value="0">Ninguna</option>
+              <option value="1">Baja</option>
+              <option value="2">Media</option>
+              <option value="3">Alta</option>
+            </select>
           </div>
 
           <div>
-            <label htmlFor="list" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            <label htmlFor="list" className="text-sm font-medium leading-none">
               Asignar a lista
             </label>
-            <Controller
-              control={form.control}
-              name="listId"
-              render={({ field, fieldState }) => (
-                <>
-                  <select
-                    id="list"
-                    {...field}
-                    value={field.value || ""}
-                    onChange={(e) => field.onChange(e.target.value || null)}
-                    className="w-full text-base border border-input rounded-md px-3 py-2 bg-background mt-2"
-                    data-testid="select-list"
-                    aria-invalid={fieldState.error ? "true" : "false"}
-                  >
-                    <option value="">Sin lista</option>
-                    {lists.map((list) => (
-                      <option key={list.id} value={list.id}>
-                        {list.name}
-                      </option>
-                    ))}
-                  </select>
-                  {fieldState.error && (
-                    <p className="text-sm font-medium text-destructive mt-1">
-                      {fieldState.error.message}
-                    </p>
-                  )}
-                </>
-              )}
-            />
+            <select
+              id="list"
+              value={listId || ""}
+              onChange={(e) => setListId(e.target.value || null)}
+              className="w-full text-base border border-input rounded-md px-3 py-2 bg-background mt-2"
+              data-testid="select-list"
+            >
+              <option value="">Sin lista</option>
+              {lists.map((list) => (
+                <option key={list.id} value={list.id}>
+                  {list.name}
+                </option>
+              ))}
+            </select>
           </div>
 
-          <Controller
-            control={form.control}
-            name="dueDate"
-            render={({ field, fieldState }) => (
-              <>
-                <DateTimePicker
-                  value={field.value || null}
-                  onChange={field.onChange}
-                />
-                {fieldState.error && (
-                  <p className="text-sm font-medium text-destructive mt-1">
-                    {fieldState.error.message}
-                  </p>
-                )}
-              </>
-            )}
+          <DateTimePicker
+            value={dueDate}
+            onChange={setDueDate}
           />
 
           <DialogFooter>
