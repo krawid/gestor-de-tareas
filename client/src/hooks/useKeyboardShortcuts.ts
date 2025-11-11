@@ -16,21 +16,29 @@ export function useKeyboardShortcuts(handlers: KeyboardShortcutHandlers) {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // NEVER handle ANY shortcuts when in text input/textarea
-      // This is critical for screen reader support (NVDA/VoiceOver)
-      const activeElement = document.activeElement as HTMLElement;
-      
-      if (activeElement) {
-        const tagName = activeElement.tagName;
-        const isInputOrTextarea = tagName === 'INPUT' || tagName === 'TEXTAREA';
-        const isContentEditable = activeElement.isContentEditable || 
-                                   activeElement.getAttribute('contenteditable') === 'true' ||
-                                   activeElement.getAttribute('role') === 'textbox';
-        
-        // Exit immediately if we're in any editable field
-        if (isInputOrTextarea || isContentEditable) {
-          return;
+      // Helper function to check if an element is editable
+      const isEditable = (el: Element | null): boolean => {
+        if (!el) return false;
+        const tagName = el.tagName;
+        if (tagName === 'INPUT' || tagName === 'TEXTAREA' || tagName === 'SELECT') {
+          return true;
         }
+        const htmlEl = el as HTMLElement;
+        if (htmlEl.isContentEditable) return true;
+        if (htmlEl.getAttribute('contenteditable') === 'true') return true;
+        if (htmlEl.getAttribute('role') === 'textbox') return true;
+        return false;
+      };
+
+      // Check BOTH event.target AND document.activeElement
+      // Screen readers may send events differently
+      const target = e.target as Element;
+      const activeElement = document.activeElement;
+
+      if (isEditable(target) || isEditable(activeElement)) {
+        // NEVER intercept ANY keys when in editable fields
+        // This is CRITICAL for screen reader character navigation
+        return;
       }
 
       // Only handle shortcuts when NOT in editable elements
