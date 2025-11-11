@@ -92,6 +92,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/lists", async (req, res) => {
     try {
       const validatedData = insertListSchema.parse(req.body);
+      // Normalize empty description to undefined (will be stored as NULL in DB)
+      if (validatedData.description !== undefined && (!validatedData.description || !validatedData.description.trim())) {
+        validatedData.description = undefined;
+      }
       const list = await storage.createList(validatedData);
       res.status(201).json(list);
     } catch (error) {
@@ -104,6 +108,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch("/api/lists/:id", async (req, res) => {
     try {
+      // Normalize empty description to undefined (will be stored as NULL in DB)
+      if (req.body.description !== undefined && (!req.body.description || !req.body.description.trim())) {
+        req.body.description = undefined;
+      }
       const list = await storage.updateList(req.params.id, req.body);
       if (!list) {
         return res.status(404).json({ error: "List not found" });

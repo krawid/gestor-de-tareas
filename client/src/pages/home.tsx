@@ -1,4 +1,4 @@
-import { useState, useImperativeHandle, forwardRef, useEffect } from "react";
+import { useState, useImperativeHandle, forwardRef, useEffect, useCallback } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { AddTaskDialog } from "@/components/add-task-dialog";
@@ -6,6 +6,7 @@ import { TaskList } from "@/components/task-list";
 import { TaskItem } from "@/components/task-item";
 import { EditTaskDialog } from "@/components/edit-task-dialog";
 import { AddListDialog } from "@/components/add-list-dialog";
+import { EditListDialog } from "@/components/edit-list-dialog";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -31,6 +32,7 @@ interface HomeProps {
   onAddListOpenChange: (open: boolean) => void;
   isAddTaskOpen: boolean;
   onAddTaskOpenChange: (open: boolean) => void;
+  onRegisterEditListHandler?: (handler: ((list: List) => void) | null) => void;
 }
 
 export interface HomeRef {
@@ -38,9 +40,10 @@ export interface HomeRef {
 }
 
 const Home = forwardRef<HomeRef, HomeProps>(
-  ({ selectedListId, searchQuery, taskFilter, onAddListClick, isAddListOpen, onAddListOpenChange, isAddTaskOpen, onAddTaskOpenChange }, ref) => {
+  ({ selectedListId, searchQuery, taskFilter, onAddListClick, isAddListOpen, onAddListOpenChange, isAddTaskOpen, onAddTaskOpenChange, onRegisterEditListHandler }, ref) => {
     const [editingTask, setEditingTask] = useState<Task | null>(null);
     const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
+    const [editingList, setEditingList] = useState<List | null>(null);
     const { toast } = useToast();
 
     useImperativeHandle(ref, () => ({
@@ -188,6 +191,27 @@ const Home = forwardRef<HomeRef, HomeProps>(
       },
     });
 
+    const updateListMutation = useMutation({
+      mutationFn: async ({ id, data }: { id: string; data: InsertList }) => {
+        return await apiRequest("PATCH", `/api/lists/${id}`, data);
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["/api/lists"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+        toast({
+          title: "Lista actualizada",
+          description: "Los cambios se han guardado correctamente",
+        });
+      },
+      onError: () => {
+        toast({
+          title: "Error",
+          description: "No se pudo actualizar la lista",
+          variant: "destructive",
+        });
+      },
+    });
+
     const handleAddTask = (data: InsertTask) => {
       createTaskMutation.mutate(data);
     };
@@ -218,6 +242,28 @@ const Home = forwardRef<HomeRef, HomeProps>(
     const handleAddList = (data: InsertList) => {
       createListMutation.mutate(data);
     };
+
+    const handleEditList = useCallback((list: List) => {
+      setEditingList(list);
+    }, []);
+
+    const handleUpdateList = (id: string, data: InsertList) => {
+      updateListMutation.mutate({ id, data });
+      setEditingList(null);
+    };
+
+    // Register edit list handler with parent
+    useEffect(() => {
+      if (onRegisterEditListHandler) {
+        onRegisterEditListHandler(handleEditList);
+      }
+      // Cleanup: revoke handler when component unmounts
+      return () => {
+        if (onRegisterEditListHandler) {
+          onRegisterEditListHandler(null);
+        }
+      };
+    }, [onRegisterEditListHandler, handleEditList]);
 
     if (isLoading) {
       return (
@@ -339,6 +385,13 @@ const Home = forwardRef<HomeRef, HomeProps>(
           open={isAddListOpen}
           onOpenChange={onAddListOpenChange}
           onAdd={handleAddList}
+        />
+
+        <EditListDialog
+          list={editingList}
+          open={!!editingList}
+          onOpenChange={(open) => !open && setEditingList(null)}
+          onUpdate={handleUpdateList}
         />
 
         <AlertDialog open={taskToDelete !== null} onOpenChange={(open) => !open && setTaskToDelete(null)}>

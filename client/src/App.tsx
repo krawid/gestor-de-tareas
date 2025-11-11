@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { HelpCircle } from "lucide-react";
 import Home, { type HomeRef } from "@/pages/home";
 import NotFound from "@/pages/not-found";
+import type { List } from "@shared/schema";
 
 
 export default function App() {
@@ -23,6 +24,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [taskFilter, setTaskFilter] = useState<TaskFilterType>("all");
   const [isShortcutsHelpOpen, setIsShortcutsHelpOpen] = useState(false);
+  const [editListHandler, setEditListHandler] = useState<((list: List) => void) | null>(null);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const homeRef = useRef<HomeRef>(null);
@@ -55,6 +57,7 @@ export default function App() {
             selectedListId={selectedListId}
             onListSelect={setSelectedListId}
             onAddList={() => setIsAddListOpen(true)}
+            onEditList={editListHandler || undefined}
             taskFilter={taskFilter}
             onTaskFilterChange={setTaskFilter}
           />
@@ -88,6 +91,7 @@ export default function App() {
                     onAddListOpenChange={setIsAddListOpen}
                     isAddTaskOpen={isAddTaskOpen}
                     onAddTaskOpenChange={setIsAddTaskOpen}
+                    onRegisterEditListHandler={setEditListHandler}
                   />
                 </Route>
                 <Route component={NotFound} />

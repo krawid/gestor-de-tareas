@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, List, CheckCircle2, Circle, Trash2, Eye } from "lucide-react";
+import { Plus, List, CheckCircle2, Circle, Trash2, Eye, Pencil } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -25,11 +25,12 @@ interface AppSidebarProps {
   selectedListId: string | null;
   onListSelect: (listId: string | null) => void;
   onAddList: () => void;
+  onEditList?: (list: ListType) => void;
   taskFilter: TaskFilterType;
   onTaskFilterChange: (filter: TaskFilterType) => void;
 }
 
-export function AppSidebar({ selectedListId, onListSelect, onAddList, taskFilter, onTaskFilterChange }: AppSidebarProps) {
+export function AppSidebar({ selectedListId, onListSelect, onAddList, onEditList, taskFilter, onTaskFilterChange }: AppSidebarProps) {
   const { toast } = useToast();
   const [viewingList, setViewingList] = useState<ListType | null>(null);
   const { data: lists = [] } = useQuery<ListType[]>({
@@ -199,6 +200,18 @@ export function AppSidebar({ selectedListId, onListSelect, onAddList, taskFilter
                         className="h-8 w-8 shrink-0"
                       >
                         <Eye className="h-4 w-4" />
+                      </Button>
+                    )}
+                    {onEditList && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => onEditList(list)}
+                        aria-label={`Editar lista ${list.name}`}
+                        data-testid={`button-edit-list-${list.id}`}
+                        className="h-8 w-8 shrink-0"
+                      >
+                        <Pencil className="h-4 w-4" />
                       </Button>
                     )}
                     <Button
