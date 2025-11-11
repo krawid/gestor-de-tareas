@@ -1,193 +1,61 @@
 # Gestor de Tareas Accesible
 
 ## Overview
-Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante HTML semántico. Diseñada para ser completamente accesible con lectores de pantalla y navegación por teclado, sin uso excesivo de ARIA.
-
-## Recent Changes
-- **2025-11-11 (tarde)**: Corrección crítica de accesibilidad - Reemplazo de FormControl/Slot con inputs nativos
-  - **Problema**: Los campos de texto no permitían navegación por caracteres con lectores de pantalla (NVDA/VoiceOver)
-  - **Causa raíz identificada**: El componente Slot de Radix UI (usado en FormControl de shadcn) interfería con la navegación por teclado
-    - Slot reescribe ids y aria attributes, haciendo que el control no se detecte como textbox estándar
-    - El wrapper sintético interceptaba eventos de flechas, bloqueando la navegación por caracteres en modo focus
-    - Los tests automatizados pasaban pero no replicaban el problema real del usuario con lectores de pantalla
-  - **Solución implementada**: Migración completa a inputs HTML nativos
-    - Creados componentes NativeInput y NativeTextarea sin wrapper Slot
-    - Reemplazado FormField/FormControl/FormItem por labels nativos con htmlFor
-    - Usado Controller de react-hook-form directamente (sin FormField)
-    - Mensajes de error renderizados manualmente con aria-invalid
-    - Actualizado AddTaskDialog, EditTaskDialog, AddListDialog, EditListDialog
-  - **Mejoras adicionales**:
-    - Hooks de atajos globales (useKeyboardShortcuts, sidebar) verifican document.activeElement
-    - Todos los event listeners salen inmediatamente si hay un INPUT/TEXTAREA/contenteditable enfocado
-  - **Resultado**: Navegación por caracteres funciona perfectamente con lectores de pantalla
-  - **Lección aprendida**: Wrapper components (como Slot) pueden romper accesibilidad nativa incluso si tests automatizados pasan
-- **2025-11-11 (mañana)**: Descripciones de listas con soporte Markdown
-  - **Campo description**: Añadido campo nullable `description` a tabla lists
-  - **Textarea multilínea**: Formularios de creación y edición usan Textarea para descripción
-    - Placeholder con ejemplo de sintaxis Markdown
-    - Soporte completo para Markdown (encabezados, listas, enlaces, negrita, cursiva)
-  - **Renderizado Markdown**: Componente ViewListDescriptionDialog
-    - Usa react-markdown para renderizado seguro (sin rehypeRaw para prevenir XSS)
-    - Estilos prose con scroll automático
-    - Modal accesible con Radix Dialog
-  - **Botones en sidebar**:
-    - Botón "Ver descripción [nombre lista]" (icono Eye) cuando lista tiene descripción
-    - Botón "Editar [nombre lista]" (icono Pencil) para todas las listas
-    - aria-labels descriptivos, data-testid para testing
-  - **EditListDialog**: Nuevo componente para editar listas
-    - Similar a AddListDialog pero con reset de formulario vía useEffect
-    - Permite editar nombre, color y descripción
-  - **Pattern de registration callback**: 
-    - Home.tsx registra handler de edición con App.tsx vía useCallback + useEffect
-    - Handler envuelto en arrow function al registrarse: `() => handleEditList` (necesario porque setState trata funciones de forma especial)
-    - Cleanup correcto registrando `() => null` en unmount para prevenir callbacks obsoletos
-    - App.tsx almacena handler en useState y lo propaga a AppSidebar
-    - AppSidebar renderiza botón editar solo cuando handler existe
-    - Previene setState sobre componentes desmontados
-  - **Normalización backend**: 
-    - POST/PATCH /api/lists convierten descripciones vacías a undefined
-    - Drizzle ORM convierte undefined a NULL en base de datos
-  - **Accesibilidad**: Todos los nuevos componentes siguen patrones accesibles con Radix UI
-- **2025-11-10 (tarde)**: Checkbox "sin fecha" y ordenamiento por fecha de vencimiento
-  - **Checkbox "Añadir fecha de vencimiento"**: Nuevo checkbox que controla la visibilidad de todos los selectores de fecha/hora
-    - Similar al checkbox "Añadir hora específica" existente
-    - Cuando está desmarcado: no se muestran selectores y dueDate = null
-    - Cuando está marcado: se muestran selectores de día, mes, año
-    - Totalmente accesible con lectores de pantalla
-  - **Ordenamiento automático de tareas**: Las tareas ahora se ordenan automáticamente
-    - Tareas con fecha de vencimiento primero, ordenadas por fecha/hora ascendente (las más próximas primero)
-    - Tareas sin fecha al final
-    - El ordenamiento considera tanto la fecha como la hora (usando getTime())
-    - Implementación eficiente sin mutación del array original
-- **2025-11-10 (mañana)**: Sistema de notificaciones eliminado
-  - **Razón**: Web Notifications API es fundamentalmente poco confiable (iOS Safari no lo soporta excepto en PWAs, navegadores suspenden timers en pestañas inactivas)
-  - **Eliminado**: Campo reminderMinutes, notificationService.ts, selectores de recordatorio, banner de permisos, columna de base de datos
-  - **Solución futura**: Si se necesitan recordatorios, implementar sistema server-side con emails en lugar de Web Notifications API
-  - **Selector de minutos mejorado**: Ahora muestra todos los valores de 0 a 59 (antes solo 0, 15, 30, 45) para mayor precisión
-- **2025-11-09**: Refactorización mayor de fecha/hora, persistencia y notificaciones
-  - **HTML semántico**: Corregido elemento `<main>` duplicado (SidebarInset ya usa `<main>`, App.tsx cambió a `<div>`)
-  - **Persistencia con PostgreSQL**:
-    - Migrado de almacenamiento en memoria (MemStorage) a base de datos PostgreSQL
-    - Implementación con Drizzle ORM (@neondatabase/serverless)
-    - Fallback automático a MemStorage si DATABASE_URL no está disponible
-    - Datos persisten entre sesiones y dispositivos
-  - **Selectores de fecha/hora accesibles** (estilo GOV.UK):
-    - Componente `DateTimePicker` con selectores separados para día, mes (nombres localizados), año
-    - Checkbox "Añadir fecha de vencimiento" para mostrar/ocultar todos los selectores de fecha
-    - Checkbox "Añadir hora específica" que muestra selectores de hora (0-23) y minuto (0-59)
-    - IDs únicos por instancia usando React `useId()` para evitar duplicados
-    - Totalmente accesible con NVDA (Chrome/Windows) y VoiceOver (Safari/iPhone)
-    - Eliminados inputs type="date" y type="time" problemáticos con lectores de pantalla
-  - **Limpieza de código**:
-    - Eliminadas importaciones innecesarias (X de lucide-react en add-task-dialog)
-    - TypeScript types mejorados para evitar undefined en DateTimePicker
-  - **Formato de fecha corregido**:
-    - Función formatDueDate ahora detecta si la fecha tiene hora específica
-    - Muestra "d de MMMM, HH:mm" cuando hay hora (ej: "15 de diciembre, 14:30")
-    - Muestra solo "d de MMMM" cuando no hay hora (ej: "15 de diciembre")
-- **2025-11-08 (tarde)**: Mejoras de accesibilidad en selectores de fecha/hora
-  - **Campos separados**: Separación de datetime-local en dos inputs independientes para VoiceOver
-    - Input type="date" etiquetado como "Fecha de vencimiento"
-    - Input type="time" etiquetado como "Hora de vencimiento" (solo visible cuando hay fecha)
-    - Mensaje explicativo: "Opcional. Si no especificas hora, será medianoche (00:00)"
-  - **Implementación técnica**:
-    - Valores derivados directamente de field.value (sin estado local desincronizado)
-    - Formateo manual con getFullYear()/getMonth()+1/getDate() (sin conversión UTC)
-    - Construcción de Date con new Date(year, month-1, day, hours, minutes) en zona horaria local
-    - Garantiza sincronización correcta después de form.reset() y entre diferentes tareas
-- **2025-11-08 (mañana)**: Refactorización mayor para mejorar accesibilidad y claridad
-  - **Jerarquía de encabezados**:
-    - h1 "Gestor de tareas" como encabezado principal en sidebar
-    - h2 "Mis Tareas" en sidebar (navegable con H/Shift+H en NVDA)
-    - h2 "Listas" en sidebar (navegable con H/Shift+H en NVDA)
-    - Vista "Todas las tareas": h2 "Tareas pendientes" y h2 "Tareas completadas" en área principal
-    - Vista filtrada o de lista: h2 contextual descriptivo en área principal
-  - **Filtros en sidebar**:
-    - Filtros movidos a sidebar bajo "Mis Tareas"
-    - Tres botones: "Todas las tareas", "Pendientes", "Completadas"
-    - Selector de filtros eliminado del header principal
-  - **Correcciones para VoiceOver (iPhone)**:
-    - Sidebar siempre visible (collapsible="none") en móvil y desktop para garantizar accesibilidad
-    - Reemplazado confirm() nativo con AlertDialog de Radix UI para confirmación de eliminación
-    - Eliminados aria-describedby innecesarios de DialogContent (mantenidos solo en formularios)
-    - Selectores de fecha usan onBlur en lugar de onChange para evitar establecer fecha automáticamente al navegar
-  - **Formularios modales**: 
-    - Añadir tarea ahora es un diálogo modal (evita mezcla con tareas existentes)
-    - Selector de lista integrado en formularios de crear/editar tarea (select nativo)
-    - Asignación explícita de lista en lugar de automática por contexto
-    - Modal de editar: eliminado botón "Cancelar" duplicado (DialogContent incluye botón X)
-  - **Mejoras de accesibilidad**:
-    - Toast notifications con región aria-live separada (solución a bug Radix UI #3634)
-    - Región sr-only siempre presente para que NVDA la registre al cargar la página
-    - Notificaciones descriptivas: "Tarea marcada como completada/pendiente" en lugar de mensaje genérico
-    - aria-pressed en botones de filtro/lista (VoiceOver requiere aria-pressed en botones, no aria-current)
-    - Grupos de botones con role="group" y aria-label descriptivo
-    - Jerarquía de encabezados coherente en todas las vistas
-    - Sidebar siempre visible (toggle eliminado por no ser útil para lectores de pantalla)
-  - **Fechas de vencimiento**: Selector HTML5, indicadores visuales, manejo correcto de zona horaria
-  - **Atajos de teclado**: N (nueva tarea), L (nueva lista), ? (ayuda), Escape (cerrar)
-  - **Sistema de listas**: 
-    - Listas puramente para filtrar vista (no auto-asignan tareas)
-    - Selector "Asignar a lista" en formularios con opción "Sin lista"
-    - Selectores nativos HTML en lugar de componentes custom
-    - Botón de eliminar lista junto a cada lista en sidebar con confirmación
-
-## Architecture
-
-### Frontend
-- React + TypeScript con Wouter para enrutamiento
-- Shadcn UI para componentes accesibles por defecto
-- TanStack Query para gestión de estado
-- HTML semántico: `<main>`, `<nav>`, `<form>`, `<label>`, `<button>`
-- Navegación completa por teclado (Tab, Enter, Escape)
-
-### Backend
-- Express.js con base de datos PostgreSQL
-- Drizzle ORM para gestión de base de datos (@neondatabase/serverless)
-- Fallback a MemStorage si DATABASE_URL no está disponible
-- API RESTful para CRUD de tareas y listas
-- Validación con Zod
-
-### Data Model
-- **Tasks**: id, title, description, completed, priority (0-3), listId, dueDate (timestamp)
-- **Lists**: id, name, color, description (nullable text, Markdown)
+El Gestor de Tareas Accesible es una aplicación de gestión de tareas diseñada con un enfoque principal en la accesibilidad natural mediante el uso de HTML semántico. Su propósito es proporcionar una experiencia de usuario fluida y completamente accesible para personas que utilizan lectores de pantalla y navegación por teclado, minimizando la dependencia de atributos ARIA complejos. El proyecto busca ser una solución robusta y fácil de usar para la organización personal de tareas, destacando por su compromiso con los estándares de accesibilidad web.
 
 ## User Preferences
 - **Accesibilidad**: Prioridad en HTML semántico, uso mínimo de ARIA
 - **Diseño**: Limpio, eficiente, inspirado en Linear y Todoist
 - **Navegación**: Completa por teclado sin mouse
 
-## Key Features
-- **Gestión de tareas**:
-  - Crear tareas mediante diálogo modal con campos: título, descripción, lista, prioridad, fecha/hora
-  - Editar y eliminar tareas existentes
-  - Marcar tareas como completadas/pendientes
-  - Sistema de prioridades (ninguna, baja, media, alta)
-- **Listas personalizables**:
-  - Crear listas con nombre, color y descripción Markdown opcional
-  - Editar listas existentes (nombre, color, descripción)
-  - Ver descripción renderizada en modal accesible
-  - Eliminar listas (botón junto a cada lista en sidebar)
-  - Filtrar vista por lista (sidebar)
-  - Asignar tareas a listas explícitamente en formularios
-  - Opción "Sin lista" disponible
-- **Filtros y búsqueda**:
-  - Filtros: Todas/Completadas/Pendientes
-  - Búsqueda global en tiempo real por título y descripción
-  - Encabezado descriptivo indica vista activa
-- **Fechas de vencimiento**: 
-  - Checkbox "Añadir fecha de vencimiento" para tareas sin fecha
-  - Selectores segmentados accesibles (día, mes, año, hora, minuto)
-  - Checkbox "Añadir hora específica" para añadir hora a una fecha
-  - Indicadores visuales de estado (vencido, hoy, futuro)
-  - Ordenamiento automático: tareas con fecha primero (más próximas arriba), sin fecha al final
-  - Compatible con NVDA y VoiceOver
-- **Atajos de teclado**: N (nueva tarea), L (nueva lista), ? (ayuda), Escape (cerrar)
-- **Accesibilidad total**:
-  - HTML semántico (h1, h2, nav, main, form, label), uso mínimo de ARIA
-  - Navegación completa por teclado
-  - aria-current en elementos activos
-  - Notificaciones toast con región aria-live dedicada para NVDA
-  - Mensajes descriptivos y contextuales en todas las acciones
-  - Completamente accesible con lectores de pantalla
-  - Probado con NVDA (Chrome/Windows) y VoiceOver (Safari/iPhone)
+## System Architecture
+
+### UI/UX Decisions
+- **Diseño limpio y eficiente**: Inspirado en la estética de Linear y Todoist.
+- **Componentes accesibles por defecto**: Utiliza Shadcn UI para garantizar la accesibilidad de los componentes.
+- **HTML Semántico**: Empleo de etiquetas HTML nativas como `<main>`, `<nav>`, `<form>`, `<label>`, `<button>` para una estructura clara y accesible.
+- **Navegación por teclado**: Soporte completo para navegación mediante Tab, Enter y Escape.
+- **Jerarquía de encabezados coherente**: Uso de `h1`, `h2` para estructurar el contenido de forma lógica y navegable por lectores de pantalla.
+- **Diálogos modales nativos**: Migración a elementos `<dialog>` HTML nativos para diálogos de tareas y listas, priorizando el comportamiento estándar del navegador y la accesibilidad.
+- **Inputs nativos**: Reemplazo de componentes de formulario con inputs HTML nativos para garantizar la correcta navegación por caracteres con lectores de pantalla.
+- **Notificaciones**: Toast notifications con región `aria-live` dedicada para una correcta vocalización por lectores de pantalla.
+- **Siempre visible sidebar**: La barra lateral es siempre visible (no colapsable) para mejorar la accesibilidad, eliminando la necesidad de un toggle.
+
+### Technical Implementations
+- **Frontend**: Desarrollado con React y TypeScript, utilizando Wouter para el enrutamiento.
+- **Gestión de estado**: TanStack Query para la gestión eficiente del estado de la aplicación.
+- **Backend**: Implementado con Express.js.
+- **Base de datos**: PostgreSQL para persistencia de datos.
+- **ORM**: Drizzle ORM (@neondatabase/serverless) para la interacción con la base de datos.
+- **Fallback de almacenamiento**: Un mecanismo de fallback a MemStorage si la variable de entorno `DATABASE_URL` no está disponible.
+- **API RESTful**: Para operaciones CRUD de tareas y listas.
+- **Validación**: Zod para la validación de esquemas de datos.
+- **Manejo de fechas/horas**: Selectores de fecha y hora accesibles y segmentados, compatibles con NVDA y VoiceOver, que evitan los problemáticos inputs `type="date"` y `type="time"`.
+- **Markdown en descripciones**: Uso de `react-markdown` para renderizar descripciones de listas con formato Markdown.
+- **Atajos de teclado globales**: Implementación de `useKeyboardShortcuts` para atajos como N (nueva tarea), L (nueva lista), ? (ayuda) y Escape (cerrar).
+
+### Feature Specifications
+- **Gestión de tareas**: Creación, edición, eliminación y marcado de tareas como completadas/pendientes. Incluye campos para título, descripción, lista, prioridad y fecha/hora de vencimiento.
+- **Listas personalizables**: Creación, edición y eliminación de listas con nombre, color y una descripción opcional en Markdown.
+- **Filtros y búsqueda**: Filtros predefinidos (Todas, Pendientes, Completadas) y búsqueda global en tiempo real por título y descripción de tareas.
+- **Fechas de vencimiento**: Gestión de fechas de vencimiento con opciones para añadir o no fecha y hora específicas, indicadores visuales de estado y ordenamiento automático de tareas.
+- **Accesibilidad total**: Cumplimiento estricto de principios de accesibilidad, incluyendo navegación por teclado, semántica HTML, uso mínimo de ARIA y pruebas con lectores de pantalla (NVDA, VoiceOver).
+
+### System Design Choices
+- **Priorización de componentes nativos**: Preferencia por elementos HTML nativos (`<dialog>`, `<input>`) sobre componentes abstractos (ej. Radix UI Slot) para evitar interferencias con la accesibilidad de lectores de pantalla.
+- **Separación de responsabilidades**: Componentes de formulario desacoplados del manejo de estado (`react-hook-form` Controller) para mayor flexibilidad.
+- **Normalización de datos**: Backend normaliza descripciones vacías a `undefined` para que Drizzle ORM las convierta a `NULL` en la base de datos.
+- **Ordenamiento automático**: Las tareas se ordenan automáticamente por fecha/hora de vencimiento, con las tareas sin fecha al final.
+
+## External Dependencies
+- **React**: Biblioteca JavaScript para construir interfaces de usuario.
+- **TypeScript**: Superset de JavaScript que añade tipado estático.
+- **Wouter**: Pequeña librería para enrutamiento en React.
+- **Shadcn UI**: Colección de componentes UI accesibles.
+- **TanStack Query**: Para la gestión de caché y estado asíncrono.
+- **Express.js**: Framework de backend para Node.js.
+- **PostgreSQL**: Sistema de gestión de bases de datos relacionales.
+- **Drizzle ORM (@neondatabase/serverless)**: ORM moderno para TypeScript.
+- **Zod**: Librería de validación de esquemas.
+- **react-markdown**: Para renderizar contenido Markdown de forma segura.
+- **Tailwind CSS**: Framework CSS para estilos.
