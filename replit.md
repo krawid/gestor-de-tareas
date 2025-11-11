@@ -4,7 +4,13 @@
 Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante HTML semántico. Diseñada para ser completamente accesible con lectores de pantalla y navegación por teclado, sin uso excesivo de ARIA.
 
 ## Recent Changes
-- **2025-11-11**: Descripciones de listas con soporte Markdown
+- **2025-11-11 (tarde)**: Corrección de accesibilidad en campos de texto para lectores de pantalla
+  - **Problema**: Los campos de texto (Input/Textarea) no permitían lectura fluida por caracteres con NVDA/VoiceOver
+  - **Causa**: FormControl siempre añadía aria-describedby apuntando a elementos inexistentes
+  - **Solución**: Modificado FormControl para solo incluir aria-describedby cuando hay mensajes de error reales
+  - **Resultado**: Lectura por caracteres ahora funciona correctamente con lectores de pantalla
+  - **Nota técnica**: El proyecto no usa FormDescription, solo FormMessage para errores
+- **2025-11-11 (mañana)**: Descripciones de listas con soporte Markdown
   - **Campo description**: Añadido campo nullable `description` a tabla lists
   - **Textarea multilínea**: Formularios de creación y edición usan Textarea para descripción
     - Placeholder con ejemplo de sintaxis Markdown
