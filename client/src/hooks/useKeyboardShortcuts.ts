@@ -16,41 +16,45 @@ export function useKeyboardShortcuts(handlers: KeyboardShortcutHandlers) {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement;
+      // NEVER handle ANY shortcuts when in text input/textarea
+      // This is critical for screen reader support (NVDA/VoiceOver)
+      const activeElement = document.activeElement as HTMLElement;
       
-      // Check if we're in an editable element - do this FIRST before any preventDefault
-      const isInputElement = 
-        target.tagName === 'INPUT' || 
-        target.tagName === 'TEXTAREA' || 
-        target.isContentEditable ||
-        target.getAttribute('role') === 'textbox' ||
-        target.closest('[contenteditable="true"]') !== null;
-
-      // Skip ALL keyboard shortcuts when in editable elements
-      if (isInputElement) {
-        return;
+      if (activeElement) {
+        const tagName = activeElement.tagName;
+        const isInputOrTextarea = tagName === 'INPUT' || tagName === 'TEXTAREA';
+        const isContentEditable = activeElement.isContentEditable || 
+                                   activeElement.getAttribute('contenteditable') === 'true' ||
+                                   activeElement.getAttribute('role') === 'textbox';
+        
+        // Exit immediately if we're in any editable field
+        if (isInputOrTextarea || isContentEditable) {
+          return;
+        }
       }
 
-      // Now handle shortcuts only when NOT in editable elements
+      // Only handle shortcuts when NOT in editable elements
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
         handlersRef.current.onFocusSearch?.();
         return;
       }
 
-      switch (e.key.toLowerCase()) {
-        case 'n':
-          e.preventDefault();
-          handlersRef.current.onFocusNewTask?.();
-          break;
-        case 'l':
-          e.preventDefault();
-          handlersRef.current.onNewList?.();
-          break;
-        case '?':
-          e.preventDefault();
-          handlersRef.current.onShowHelp?.();
-          break;
+      const key = e.key.toLowerCase();
+      if (key === 'n' || key === 'l' || key === '?') {
+        e.preventDefault();
+        
+        switch (key) {
+          case 'n':
+            handlersRef.current.onFocusNewTask?.();
+            break;
+          case 'l':
+            handlersRef.current.onNewList?.();
+            break;
+          case '?':
+            handlersRef.current.onShowHelp?.();
+            break;
+        }
       }
     };
 

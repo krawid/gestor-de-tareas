@@ -6,11 +6,12 @@ Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante 
 ## Recent Changes
 - **2025-11-11 (tarde)**: Corrección de accesibilidad en campos de texto para lectores de pantalla
   - **Problema**: Los campos de texto (Input/Textarea) no permitían lectura fluida por caracteres con NVDA/VoiceOver
-  - **Causa raíz**: Hook de atajos de teclado globales interceptaba teclas antes de verificar si estábamos en campos editables
+  - **Causa raíz**: Hooks de atajos de teclado globales interceptaban teclas antes de verificar si estábamos en campos editables
   - **Solución principal**: Modificado useKeyboardShortcuts para verificar campos editables PRIMERO, antes de cualquier preventDefault()
-    - Añadidas verificaciones adicionales: role="textbox", contenteditable, closest('[contenteditable="true"]')
-    - Atajo Cmd/Ctrl+K ahora también respeta campos editables
+    - Usa document.activeElement para detectar si hay un campo de texto enfocado
+    - Verifica INPUT, TEXTAREA, contenteditable
     - TODOS los atajos se ignoran completamente cuando se está escribiendo
+  - **Solución adicional en sidebar**: Añadida verificación de campos editables al listener Cmd/Ctrl+B
   - **Solución secundaria**: Limpiado FormControl para solo incluir aria-describedby cuando hay mensajes de error
   - **Resultado**: Lectura por caracteres ahora funciona correctamente con lectores de pantalla
   - **Nota técnica**: Los atajos de teclado nunca deben interceptar eventos dentro de INPUT, TEXTAREA o elementos contenteditable
