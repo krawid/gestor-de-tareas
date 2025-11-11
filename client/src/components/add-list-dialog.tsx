@@ -1,4 +1,4 @@
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertListSchema } from "@shared/schema";
 import type { InsertList } from "@shared/schema";
@@ -9,16 +9,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { NativeInput } from "@/components/ui/native-input";
+import { NativeTextarea } from "@/components/ui/native-textarea";
 import { Button } from "@/components/ui/button";
 
 interface AddListDialogProps {
@@ -59,92 +51,105 @@ export function AddListDialog({ open, onOpenChange, onAdd }: AddListDialogProps)
           <DialogTitle>Nueva lista</DialogTitle>
         </DialogHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <FormField
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <div>
+            <label htmlFor="list-name" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              Nombre de la lista
+            </label>
+            <Controller
               control={form.control}
               name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel htmlFor="list-name">Nombre de la lista</FormLabel>
-                  <FormControl>
-                    <Input
-                      id="list-name"
-                      {...field}
-                      placeholder="Ej: Trabajo, Personal, Compras"
-                      className="text-base"
-                      data-testid="input-list-name"
-                      required
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+              render={({ field, fieldState }) => (
+                <>
+                  <NativeInput
+                    id="list-name"
+                    {...field}
+                    placeholder="Ej: Trabajo, Personal, Compras"
+                    className="text-base mt-2"
+                    data-testid="input-list-name"
+                    required
+                    aria-invalid={fieldState.error ? "true" : "false"}
+                  />
+                  {fieldState.error && (
+                    <p className="text-sm font-medium text-destructive mt-1">
+                      {fieldState.error.message}
+                    </p>
+                  )}
+                </>
               )}
             />
+          </div>
 
-            <FormField
+          <div>
+            <label id="list-color-label" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              Color
+            </label>
+            <Controller
               control={form.control}
               name="color"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel htmlFor="list-color">Color</FormLabel>
-                  <FormControl>
-                    <div className="flex gap-2 flex-wrap" role="group" aria-labelledby="color-group-label">
-                      <span id="color-group-label" className="sr-only">
-                        Selecciona un color para la lista
-                      </span>
-                      {colors.map((color) => (
-                        <button
-                          key={color.value}
-                          type="button"
-                          onClick={() => field.onChange(color.value)}
-                          className={`w-10 h-10 rounded-md border-2 transition-all ${
-                            field.value === color.value
-                              ? "border-foreground scale-110"
-                              : "border-transparent"
-                          }`}
-                          style={{ backgroundColor: color.value }}
-                          aria-label={`${color.label}${field.value === color.value ? ', seleccionado' : ''}`}
-                          aria-pressed={field.value === color.value}
-                          data-testid={`button-color-${color.value}`}
-                        />
-                      ))}
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+              render={({ field, fieldState }) => (
+                <>
+                  <div className="flex gap-2 flex-wrap mt-2" role="group" aria-labelledby="list-color-label">
+                    {colors.map((color) => (
+                      <button
+                        key={color.value}
+                        type="button"
+                        onClick={() => field.onChange(color.value)}
+                        className={`w-10 h-10 rounded-md border-2 transition-all ${
+                          field.value === color.value
+                            ? "border-foreground scale-110"
+                            : "border-transparent"
+                        }`}
+                        style={{ backgroundColor: color.value }}
+                        aria-label={`${color.label}${field.value === color.value ? ', seleccionado' : ''}`}
+                        aria-pressed={field.value === color.value}
+                        data-testid={`button-color-${color.value}`}
+                      />
+                    ))}
+                  </div>
+                  {fieldState.error && (
+                    <p className="text-sm font-medium text-destructive mt-1">
+                      {fieldState.error.message}
+                    </p>
+                  )}
+                </>
               )}
             />
+          </div>
 
-            <FormField
+          <div>
+            <label htmlFor="list-description" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              Descripción (opcional)
+            </label>
+            <Controller
               control={form.control}
               name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel htmlFor="list-description">
-                    Descripción (opcional)
-                  </FormLabel>
-                  <FormControl>
-                    <Textarea
-                      id="list-description"
-                      {...field}
-                      placeholder="Puedes usar Markdown: **negrita**, *cursiva*, [enlaces](https://ejemplo.com), listas, etc."
-                      className="text-base min-h-[100px]"
-                      data-testid="textarea-list-description"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+              render={({ field, fieldState }) => (
+                <>
+                  <NativeTextarea
+                    id="list-description"
+                    {...field}
+                    placeholder="Puedes usar Markdown: **negrita**, *cursiva*, [enlaces](https://ejemplo.com), listas, etc."
+                    className="text-base min-h-[100px] mt-2"
+                    data-testid="textarea-list-description"
+                    aria-invalid={fieldState.error ? "true" : "false"}
+                  />
+                  {fieldState.error && (
+                    <p className="text-sm font-medium text-destructive mt-1">
+                      {fieldState.error.message}
+                    </p>
+                  )}
+                </>
               )}
             />
+          </div>
 
-            <DialogFooter>
-              <Button type="submit" data-testid="button-save-list">
-                Crear lista
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+          <DialogFooter>
+            <Button type="submit" data-testid="button-save-list">
+              Crear lista
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

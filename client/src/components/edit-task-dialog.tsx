@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
@@ -9,16 +9,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { NativeInput } from "@/components/ui/native-input";
+import { NativeTextarea } from "@/components/ui/native-textarea";
 import { Button } from "@/components/ui/button";
 import { DateTimePicker } from "@/components/date-time-picker";
 import type { Task, List } from "@shared/schema";
@@ -83,125 +75,153 @@ export function EditTaskDialog({ task, open, onOpenChange, onSave }: EditTaskDia
           <DialogTitle>Editar tarea</DialogTitle>
         </DialogHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <FormField
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <div>
+            <label htmlFor="title" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              Título
+            </label>
+            <Controller
               control={form.control}
               name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel htmlFor="title">Título</FormLabel>
-                  <FormControl>
-                    <Input
-                      id="title"
-                      {...field}
-                      className="text-base"
-                      data-testid="input-edit-title"
-                      required
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+              render={({ field, fieldState }) => (
+                <>
+                  <NativeInput
+                    id="title"
+                    {...field}
+                    className="text-base mt-2"
+                    data-testid="input-edit-title"
+                    required
+                    aria-invalid={fieldState.error ? "true" : "false"}
+                  />
+                  {fieldState.error && (
+                    <p className="text-sm font-medium text-destructive mt-1">
+                      {fieldState.error.message}
+                    </p>
+                  )}
+                </>
               )}
             />
+          </div>
 
-            <FormField
+          <div>
+            <label htmlFor="description" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              Descripción
+            </label>
+            <Controller
               control={form.control}
               name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel htmlFor="description">Descripción</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      id="description"
-                      {...field}
-                      rows={3}
-                      className="resize-none text-base"
-                      data-testid="input-edit-description"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+              render={({ field, fieldState }) => (
+                <>
+                  <NativeTextarea
+                    id="description"
+                    {...field}
+                    rows={3}
+                    className="resize-none text-base mt-2"
+                    data-testid="input-edit-description"
+                    aria-invalid={fieldState.error ? "true" : "false"}
+                  />
+                  {fieldState.error && (
+                    <p className="text-sm font-medium text-destructive mt-1">
+                      {fieldState.error.message}
+                    </p>
+                  )}
+                </>
               )}
             />
+          </div>
 
-            <FormField
+          <div>
+            <label htmlFor="priority" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              Prioridad
+            </label>
+            <Controller
               control={form.control}
               name="priority"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel htmlFor="priority">Prioridad</FormLabel>
-                  <FormControl>
-                    <select
-                      id="priority"
-                      {...field}
-                      value={field.value || 0}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
-                      className="w-full text-base border border-input rounded-md px-3 py-2 bg-background"
-                      data-testid="select-priority"
-                    >
-                      <option value="0">Ninguna</option>
-                      <option value="1">Baja</option>
-                      <option value="2">Media</option>
-                      <option value="3">Alta</option>
-                    </select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+              render={({ field, fieldState }) => (
+                <>
+                  <select
+                    id="priority"
+                    {...field}
+                    value={field.value || 0}
+                    onChange={(e) => field.onChange(Number(e.target.value))}
+                    className="w-full text-base border border-input rounded-md px-3 py-2 bg-background mt-2"
+                    data-testid="select-priority"
+                    aria-invalid={fieldState.error ? "true" : "false"}
+                  >
+                    <option value="0">Ninguna</option>
+                    <option value="1">Baja</option>
+                    <option value="2">Media</option>
+                    <option value="3">Alta</option>
+                  </select>
+                  {fieldState.error && (
+                    <p className="text-sm font-medium text-destructive mt-1">
+                      {fieldState.error.message}
+                    </p>
+                  )}
+                </>
               )}
             />
+          </div>
 
-            <FormField
+          <div>
+            <label htmlFor="list" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              Asignar a lista
+            </label>
+            <Controller
               control={form.control}
               name="listId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel htmlFor="list">Asignar a lista</FormLabel>
-                  <FormControl>
-                    <select
-                      id="list"
-                      {...field}
-                      value={field.value || ""}
-                      onChange={(e) => field.onChange(e.target.value || null)}
-                      className="w-full text-base border border-input rounded-md px-3 py-2 bg-background"
-                      data-testid="select-list"
-                    >
-                      <option value="">Sin lista</option>
-                      {lists.map((list) => (
-                        <option key={list.id} value={list.id}>
-                          {list.name}
-                        </option>
-                      ))}
-                    </select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+              render={({ field, fieldState }) => (
+                <>
+                  <select
+                    id="list"
+                    {...field}
+                    value={field.value || ""}
+                    onChange={(e) => field.onChange(e.target.value || null)}
+                    className="w-full text-base border border-input rounded-md px-3 py-2 bg-background mt-2"
+                    data-testid="select-list"
+                    aria-invalid={fieldState.error ? "true" : "false"}
+                  >
+                    <option value="">Sin lista</option>
+                    {lists.map((list) => (
+                      <option key={list.id} value={list.id}>
+                        {list.name}
+                      </option>
+                    ))}
+                  </select>
+                  {fieldState.error && (
+                    <p className="text-sm font-medium text-destructive mt-1">
+                      {fieldState.error.message}
+                    </p>
+                  )}
+                </>
               )}
             />
+          </div>
 
-            <FormField
-              control={form.control}
-              name="dueDate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <DateTimePicker
-                      value={field.value || null}
-                      onChange={field.onChange}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <Controller
+            control={form.control}
+            name="dueDate"
+            render={({ field, fieldState }) => (
+              <>
+                <DateTimePicker
+                  value={field.value || null}
+                  onChange={field.onChange}
+                />
+                {fieldState.error && (
+                  <p className="text-sm font-medium text-destructive mt-1">
+                    {fieldState.error.message}
+                  </p>
+                )}
+              </>
+            )}
+          />
 
-            <DialogFooter>
-              <Button type="submit" data-testid="button-save-edit">
-                Guardar cambios
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+          <DialogFooter>
+            <Button type="submit" data-testid="button-save-edit">
+              Guardar cambios
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

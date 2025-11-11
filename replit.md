@@ -4,17 +4,23 @@
 Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante HTML semántico. Diseñada para ser completamente accesible con lectores de pantalla y navegación por teclado, sin uso excesivo de ARIA.
 
 ## Recent Changes
-- **2025-11-11 (tarde)**: Corrección de accesibilidad en campos de texto para lectores de pantalla
-  - **Problema**: Los campos de texto (Input/Textarea) no permitían lectura fluida por caracteres con NVDA/VoiceOver
-  - **Causa raíz**: Hooks de atajos de teclado globales interceptaban teclas antes de verificar si estábamos en campos editables
-  - **Solución principal**: Modificado useKeyboardShortcuts para verificar campos editables PRIMERO, antes de cualquier preventDefault()
-    - Usa document.activeElement para detectar si hay un campo de texto enfocado
-    - Verifica INPUT, TEXTAREA, contenteditable
-    - TODOS los atajos se ignoran completamente cuando se está escribiendo
-  - **Solución adicional en sidebar**: Añadida verificación de campos editables al listener Cmd/Ctrl+B
-  - **Solución secundaria**: Limpiado FormControl para solo incluir aria-describedby cuando hay mensajes de error
-  - **Resultado**: Lectura por caracteres ahora funciona correctamente con lectores de pantalla
-  - **Nota técnica**: Los atajos de teclado nunca deben interceptar eventos dentro de INPUT, TEXTAREA o elementos contenteditable
+- **2025-11-11 (tarde)**: Corrección crítica de accesibilidad - Reemplazo de FormControl/Slot con inputs nativos
+  - **Problema**: Los campos de texto no permitían navegación por caracteres con lectores de pantalla (NVDA/VoiceOver)
+  - **Causa raíz identificada**: El componente Slot de Radix UI (usado en FormControl de shadcn) interfería con la navegación por teclado
+    - Slot reescribe ids y aria attributes, haciendo que el control no se detecte como textbox estándar
+    - El wrapper sintético interceptaba eventos de flechas, bloqueando la navegación por caracteres en modo focus
+    - Los tests automatizados pasaban pero no replicaban el problema real del usuario con lectores de pantalla
+  - **Solución implementada**: Migración completa a inputs HTML nativos
+    - Creados componentes NativeInput y NativeTextarea sin wrapper Slot
+    - Reemplazado FormField/FormControl/FormItem por labels nativos con htmlFor
+    - Usado Controller de react-hook-form directamente (sin FormField)
+    - Mensajes de error renderizados manualmente con aria-invalid
+    - Actualizado AddTaskDialog, EditTaskDialog, AddListDialog, EditListDialog
+  - **Mejoras adicionales**:
+    - Hooks de atajos globales (useKeyboardShortcuts, sidebar) verifican document.activeElement
+    - Todos los event listeners salen inmediatamente si hay un INPUT/TEXTAREA/contenteditable enfocado
+  - **Resultado**: Navegación por caracteres funciona perfectamente con lectores de pantalla
+  - **Lección aprendida**: Wrapper components (como Slot) pueden romper accesibilidad nativa incluso si tests automatizados pasan
 - **2025-11-11 (mañana)**: Descripciones de listas con soporte Markdown
   - **Campo description**: Añadido campo nullable `description` a tabla lists
   - **Textarea multilínea**: Formularios de creación y edición usan Textarea para descripción
