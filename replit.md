@@ -6,10 +6,14 @@ Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante 
 ## Recent Changes
 - **2025-11-11 (tarde)**: Corrección de accesibilidad en campos de texto para lectores de pantalla
   - **Problema**: Los campos de texto (Input/Textarea) no permitían lectura fluida por caracteres con NVDA/VoiceOver
-  - **Causa**: FormControl siempre añadía aria-describedby apuntando a elementos inexistentes
-  - **Solución**: Modificado FormControl para solo incluir aria-describedby cuando hay mensajes de error reales
+  - **Causa raíz**: Hook de atajos de teclado globales interceptaba teclas antes de verificar si estábamos en campos editables
+  - **Solución principal**: Modificado useKeyboardShortcuts para verificar campos editables PRIMERO, antes de cualquier preventDefault()
+    - Añadidas verificaciones adicionales: role="textbox", contenteditable, closest('[contenteditable="true"]')
+    - Atajo Cmd/Ctrl+K ahora también respeta campos editables
+    - TODOS los atajos se ignoran completamente cuando se está escribiendo
+  - **Solución secundaria**: Limpiado FormControl para solo incluir aria-describedby cuando hay mensajes de error
   - **Resultado**: Lectura por caracteres ahora funciona correctamente con lectores de pantalla
-  - **Nota técnica**: El proyecto no usa FormDescription, solo FormMessage para errores
+  - **Nota técnica**: Los atajos de teclado nunca deben interceptar eventos dentro de INPUT, TEXTAREA o elementos contenteditable
 - **2025-11-11 (mañana)**: Descripciones de listas con soporte Markdown
   - **Campo description**: Añadido campo nullable `description` a tabla lists
   - **Textarea multilínea**: Formularios de creación y edición usan Textarea para descripción

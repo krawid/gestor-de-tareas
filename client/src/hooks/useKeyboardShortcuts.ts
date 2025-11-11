@@ -17,18 +17,24 @@ export function useKeyboardShortcuts(handlers: KeyboardShortcutHandlers) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
+      
+      // Check if we're in an editable element - do this FIRST before any preventDefault
       const isInputElement = 
         target.tagName === 'INPUT' || 
         target.tagName === 'TEXTAREA' || 
-        target.isContentEditable;
+        target.isContentEditable ||
+        target.getAttribute('role') === 'textbox' ||
+        target.closest('[contenteditable="true"]') !== null;
 
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        handlersRef.current.onFocusSearch?.();
+      // Skip ALL keyboard shortcuts when in editable elements
+      if (isInputElement) {
         return;
       }
 
-      if (isInputElement) {
+      // Now handle shortcuts only when NOT in editable elements
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        handlersRef.current.onFocusSearch?.();
         return;
       }
 
