@@ -8,16 +8,7 @@ import { EditTaskDialog } from "@/components/edit-task-dialog";
 import { AddListDialog } from "@/components/add-list-dialog";
 import { EditListDialog } from "@/components/edit-list-dialog";
 import { Button } from "@/components/ui/button";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { NativeDialog, NativeDialogFooter } from "@/components/ui/native-dialog";
 import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { TaskFilterType } from "@/components/task-filter";
@@ -395,25 +386,34 @@ const Home = forwardRef<HomeRef, HomeProps>(
           onUpdate={handleUpdateList}
         />
 
-        <AlertDialog open={taskToDelete !== null} onOpenChange={(open) => !open && setTaskToDelete(null)}>
-          <AlertDialogContent data-testid="alert-delete-task">
-            <AlertDialogHeader>
-              <AlertDialogTitle>¿Eliminar tarea?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Esta acción no se puede deshacer. La tarea será eliminada permanentemente.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel data-testid="button-cancel-delete">Cancelar</AlertDialogCancel>
-              <AlertDialogAction 
+        <NativeDialog
+          open={taskToDelete !== null}
+          onOpenChange={(open) => !open && setTaskToDelete(null)}
+          title="¿Eliminar tarea?"
+          data-testid="alert-delete-task"
+        >
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Esta acción no se puede deshacer. La tarea será eliminada permanentemente.
+            </p>
+            <NativeDialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setTaskToDelete(null)}
+                data-testid="button-cancel-delete"
+              >
+                Cancelar
+              </Button>
+              <Button
+                variant="destructive"
                 onClick={confirmDeleteTask}
                 data-testid="button-confirm-delete"
               >
                 Eliminar
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+              </Button>
+            </NativeDialogFooter>
+          </div>
+        </NativeDialog>
       </div>
     );
   }

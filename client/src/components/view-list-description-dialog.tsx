@@ -1,10 +1,5 @@
 import ReactMarkdown from "react-markdown";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { NativeDialog } from "@/components/ui/native-dialog";
 import type { List } from "@shared/schema";
 
 interface ViewListDescriptionDialogProps {
@@ -21,21 +16,17 @@ export function ViewListDescriptionDialog({
   if (!list) return null;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        data-testid={`dialog-view-description-${list.id}`}
-        className="max-w-2xl max-h-[80vh] overflow-y-auto"
-      >
-        <DialogHeader>
-          <DialogTitle>Descripción: {list.name}</DialogTitle>
-        </DialogHeader>
-
-        <div className="prose prose-sm dark:prose-invert max-w-none">
-          <ReactMarkdown>
-            {list.description || "Sin descripción"}
-          </ReactMarkdown>
-        </div>
-      </DialogContent>
-    </Dialog>
+    <NativeDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={`Descripción: ${list.name}`}
+      data-testid={`dialog-view-description-${list.id}`}
+    >
+      <div className="prose prose-sm dark:prose-invert max-w-none max-h-96 overflow-y-auto">
+        <ReactMarkdown>
+          {list.description || "Sin descripción"}
+        </ReactMarkdown>
+      </div>
+    </NativeDialog>
   );
 }
