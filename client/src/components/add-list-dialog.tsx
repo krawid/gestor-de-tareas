@@ -18,6 +18,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 
 interface AddListDialogProps {
@@ -40,6 +41,7 @@ export function AddListDialog({ open, onOpenChange, onAdd }: AddListDialogProps)
     resolver: zodResolver(insertListSchema),
     defaultValues: {
       name: "",
+      description: "",
       color: "#3b82f6",
     },
   });
@@ -108,6 +110,28 @@ export function AddListDialog({ open, onOpenChange, onAdd }: AddListDialogProps)
                         />
                       ))}
                     </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel htmlFor="list-description">
+                    Descripción (opcional)
+                  </FormLabel>
+                  <FormControl>
+                    <Textarea
+                      id="list-description"
+                      {...field}
+                      placeholder="Puedes usar Markdown: **negrita**, *cursiva*, [enlaces](https://ejemplo.com), listas, etc."
+                      className="text-base min-h-[100px]"
+                      data-testid="textarea-list-description"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

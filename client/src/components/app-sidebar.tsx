@@ -1,4 +1,5 @@
-import { Plus, List, CheckCircle2, Circle, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { Plus, List, CheckCircle2, Circle, Trash2, Eye } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -17,6 +18,7 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { List as ListType, Task } from "@shared/schema";
 import type { TaskFilterType } from "@/components/task-filter";
+import { ViewListDescriptionDialog } from "@/components/view-list-description-dialog";
 import { cn } from "@/lib/utils";
 
 interface AppSidebarProps {
@@ -29,6 +31,7 @@ interface AppSidebarProps {
 
 export function AppSidebar({ selectedListId, onListSelect, onAddList, taskFilter, onTaskFilterChange }: AppSidebarProps) {
   const { toast } = useToast();
+  const [viewingList, setViewingList] = useState<ListType | null>(null);
   const { data: lists = [] } = useQuery<ListType[]>({
     queryKey: ["/api/lists"],
   });
@@ -186,6 +189,18 @@ export function AppSidebar({ selectedListId, onListSelect, onAddList, taskFilter
                         </Badge>
                       )}
                     </SidebarMenuButton>
+                    {list.description && list.description.trim() && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => setViewingList(list)}
+                        aria-label={`Ver descripción ${list.name}`}
+                        data-testid={`button-view-description-${list.id}`}
+                        className="h-8 w-8 shrink-0"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    )}
                     <Button
                       size="icon"
                       variant="ghost"
@@ -215,6 +230,11 @@ export function AppSidebar({ selectedListId, onListSelect, onAddList, taskFilter
           Nueva lista
         </Button>
       </SidebarFooter>
+      <ViewListDescriptionDialog
+        list={viewingList}
+        open={!!viewingList}
+        onOpenChange={(open) => !open && setViewingList(null)}
+      />
     </Sidebar>
   );
 }

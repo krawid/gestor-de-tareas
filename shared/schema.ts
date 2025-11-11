@@ -6,6 +6,7 @@ import { z } from "zod";
 export const lists = pgTable("lists", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
+  description: text("description"),
   color: text("color").notNull().default("#2563eb"),
 });
 
@@ -21,6 +22,7 @@ export const tasks = pgTable("tasks", {
 
 export const insertListSchema = createInsertSchema(lists, {
   name: z.string().min(1, "El nombre es requerido"),
+  description: z.string().optional().or(z.literal("")),
 }).omit({
   id: true,
 });
