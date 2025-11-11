@@ -255,12 +255,13 @@ const Home = forwardRef<HomeRef, HomeProps>(
     // Register edit list handler with parent
     useEffect(() => {
       if (onRegisterEditListHandler) {
-        onRegisterEditListHandler(handleEditList);
+        // Wrap in arrow function because setState treats functions specially
+        onRegisterEditListHandler(() => handleEditList);
       }
       // Cleanup: revoke handler when component unmounts
       return () => {
         if (onRegisterEditListHandler) {
-          onRegisterEditListHandler(null);
+          onRegisterEditListHandler(() => null);
         }
       };
     }, [onRegisterEditListHandler, handleEditList]);

@@ -4,6 +4,33 @@
 Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante HTML semántico. Diseñada para ser completamente accesible con lectores de pantalla y navegación por teclado, sin uso excesivo de ARIA.
 
 ## Recent Changes
+- **2025-11-11**: Descripciones de listas con soporte Markdown
+  - **Campo description**: Añadido campo nullable `description` a tabla lists
+  - **Textarea multilínea**: Formularios de creación y edición usan Textarea para descripción
+    - Placeholder con ejemplo de sintaxis Markdown
+    - Soporte completo para Markdown (encabezados, listas, enlaces, negrita, cursiva)
+  - **Renderizado Markdown**: Componente ViewListDescriptionDialog
+    - Usa react-markdown para renderizado seguro (sin rehypeRaw para prevenir XSS)
+    - Estilos prose con scroll automático
+    - Modal accesible con Radix Dialog
+  - **Botones en sidebar**:
+    - Botón "Ver descripción [nombre lista]" (icono Eye) cuando lista tiene descripción
+    - Botón "Editar [nombre lista]" (icono Pencil) para todas las listas
+    - aria-labels descriptivos, data-testid para testing
+  - **EditListDialog**: Nuevo componente para editar listas
+    - Similar a AddListDialog pero con reset de formulario vía useEffect
+    - Permite editar nombre, color y descripción
+  - **Pattern de registration callback**: 
+    - Home.tsx registra handler de edición con App.tsx vía useCallback + useEffect
+    - Handler envuelto en arrow function al registrarse: `() => handleEditList` (necesario porque setState trata funciones de forma especial)
+    - Cleanup correcto registrando `() => null` en unmount para prevenir callbacks obsoletos
+    - App.tsx almacena handler en useState y lo propaga a AppSidebar
+    - AppSidebar renderiza botón editar solo cuando handler existe
+    - Previene setState sobre componentes desmontados
+  - **Normalización backend**: 
+    - POST/PATCH /api/lists convierten descripciones vacías a undefined
+    - Drizzle ORM convierte undefined a NULL en base de datos
+  - **Accesibilidad**: Todos los nuevos componentes siguen patrones accesibles con Radix UI
 - **2025-11-10 (tarde)**: Checkbox "sin fecha" y ordenamiento por fecha de vencimiento
   - **Checkbox "Añadir fecha de vencimiento"**: Nuevo checkbox que controla la visibilidad de todos los selectores de fecha/hora
     - Similar al checkbox "Añadir hora específica" existente
@@ -106,7 +133,7 @@ Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante 
 
 ### Data Model
 - **Tasks**: id, title, description, completed, priority (0-3), listId, dueDate (timestamp)
-- **Lists**: id, name, color
+- **Lists**: id, name, color, description (nullable text, Markdown)
 
 ## User Preferences
 - **Accesibilidad**: Prioridad en HTML semántico, uso mínimo de ARIA
@@ -120,7 +147,9 @@ Aplicación de gestión de tareas con enfoque en accesibilidad natural mediante 
   - Marcar tareas como completadas/pendientes
   - Sistema de prioridades (ninguna, baja, media, alta)
 - **Listas personalizables**:
-  - Crear listas con nombre y color
+  - Crear listas con nombre, color y descripción Markdown opcional
+  - Editar listas existentes (nombre, color, descripción)
+  - Ver descripción renderizada en modal accesible
   - Eliminar listas (botón junto a cada lista en sidebar)
   - Filtrar vista por lista (sidebar)
   - Asignar tareas a listas explícitamente en formularios
