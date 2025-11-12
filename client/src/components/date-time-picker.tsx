@@ -1,6 +1,6 @@
 import { useState, useEffect, useId } from "react";
 import { FormLabel } from "@/components/ui/form";
-import { Checkbox } from "@/components/ui/checkbox";
+import { NativeCheckbox } from "@/components/ui/native-checkbox";
 
 interface DateTimePickerProps {
   value: Date | null;
@@ -116,11 +116,11 @@ export function DateTimePicker({
     <div className="space-y-4">
       {/* Checkbox para incluir fecha */}
       <div className="flex items-center space-x-2">
-        <Checkbox
+        <NativeCheckbox
           id={includeDateId}
           checked={includeDate}
           onCheckedChange={(checked) => {
-            setIncludeDate(!!checked);
+            setIncludeDate(checked);
             if (!checked) {
               // Si desmarcamos, limpiar todo y devolver null
               setDay("");
@@ -236,11 +236,11 @@ export function DateTimePicker({
       {/* Checkbox para incluir hora */}
       {includeDate && day && month && year && (
         <div className="flex items-center space-x-2">
-          <Checkbox
+          <NativeCheckbox
             id={includeTimeId}
             checked={includeTime}
             onCheckedChange={(checked) => {
-              setIncludeTime(!!checked);
+              setIncludeTime(checked);
               if (!checked) {
                 // Si desmarcamos, resetear a medianoche
                 setHour("00");

@@ -76,34 +76,17 @@ export function EditTaskDialog({ task, open, onOpenChange, onSave }: EditTaskDia
 
         <div>
           <label htmlFor="description" className="text-sm font-medium leading-none">
-            Descripción
+            Descripción (opcional)
           </label>
           <textarea
             id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
+            placeholder="Añade detalles adicionales..."
             className="flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 resize-none mt-2"
             data-testid="input-edit-description"
           />
-        </div>
-
-        <div>
-          <label htmlFor="priority" className="text-sm font-medium leading-none">
-            Prioridad
-          </label>
-          <select
-            id="priority"
-            value={priority}
-            onChange={(e) => setPriority(Number(e.target.value))}
-            className="w-full text-base border border-input rounded-md px-3 py-2 bg-background mt-2"
-            data-testid="select-priority"
-          >
-            <option value="0">Ninguna</option>
-            <option value="1">Baja</option>
-            <option value="2">Media</option>
-            <option value="3">Alta</option>
-          </select>
         </div>
 
         <div>
@@ -123,6 +106,24 @@ export function EditTaskDialog({ task, open, onOpenChange, onSave }: EditTaskDia
                 {list.name}
               </option>
             ))}
+          </select>
+        </div>
+
+        <div>
+          <label htmlFor="priority" className="text-sm font-medium leading-none">
+            Prioridad
+          </label>
+          <select
+            id="priority"
+            value={priority}
+            onChange={(e) => setPriority(Number(e.target.value))}
+            className="w-full text-base border border-input rounded-md px-3 py-2 bg-background mt-2"
+            data-testid="select-priority"
+          >
+            <option value="0">Ninguna</option>
+            <option value="1">Baja</option>
+            <option value="2">Media</option>
+            <option value="3">Alta</option>
           </select>
         </div>
 

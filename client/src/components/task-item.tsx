@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Pencil, Trash2, Calendar, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { NativeCheckbox } from "@/components/ui/native-checkbox";
 import { Badge } from "@/components/ui/badge";
 import { format, isPast, isToday } from "date-fns";
 import { es } from "date-fns/locale";
@@ -50,10 +50,10 @@ export function TaskItem({ task, onToggle, onEdit, onDelete }: TaskItemProps) {
       }}
       data-testid={`task-item-${task.id}`}
     >
-      <Checkbox
+      <NativeCheckbox
         id={`task-${task.id}`}
         checked={task.completed}
-        onCheckedChange={(checked) => onToggle(task.id, checked as boolean)}
+        onCheckedChange={(checked) => onToggle(task.id, checked)}
         className="h-5 w-5"
         data-testid={`checkbox-task-${task.id}`}
       />
