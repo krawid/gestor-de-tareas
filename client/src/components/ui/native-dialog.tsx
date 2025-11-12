@@ -48,7 +48,7 @@ export function NativeDialog({ open, onOpenChange, children, title, "data-testid
         // Focus the first input/textarea/button after dialog opens
         setTimeout(() => {
           const firstFocusable = dialog.querySelector<HTMLElement>(
-            'input:not([type="hidden"]), textarea, select, button:not([aria-label="Cerrar"])'
+            'input:not([type="hidden"]), textarea, select, button'
           );
           if (firstFocusable) {
             firstFocusable.focus();
@@ -67,6 +67,81 @@ export function NativeDialog({ open, onOpenChange, children, title, "data-testid
       dialog.removeEventListener('close', handleNativeClose);
     };
   }, [open, onOpenChange]);
+
+  // Strict focus trap - keep focus locked inside dialog
+  useEffect(() => {
+    if (!open) return;
+
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    const getFocusableElements = (): HTMLElement[] => {
+      const elements = dialog.querySelectorAll<HTMLElement>(
+        'a[href], button:not(:disabled), input:not([type="hidden"]):not(:disabled), textarea:not(:disabled), select:not(:disabled), [tabindex]:not([tabindex="-1"]):not(:disabled), [contenteditable]:not([contenteditable="false"])'
+      );
+      return Array.from(elements).filter(el => {
+        // Additional check for visibility
+        const style = window.getComputedStyle(el);
+        return style.display !== 'none' && style.visibility !== 'hidden';
+      });
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+
+      const focusableElements = getFocusableElements();
+      if (focusableElements.length === 0) return;
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+      const activeElement = document.activeElement as HTMLElement;
+      const currentIndex = focusableElements.indexOf(activeElement);
+
+      // If active element is not in the list, trap focus
+      if (currentIndex === -1) {
+        e.preventDefault();
+        if (e.shiftKey) {
+          lastElement.focus();
+        } else {
+          firstElement.focus();
+        }
+        return;
+      }
+
+      // If at last element going forward, wrap to first
+      if (!e.shiftKey && currentIndex === focusableElements.length - 1) {
+        e.preventDefault();
+        firstElement.focus();
+        return;
+      }
+
+      // If at first element going backward, wrap to last
+      if (e.shiftKey && currentIndex === 0) {
+        e.preventDefault();
+        lastElement.focus();
+        return;
+      }
+    };
+
+    const handleFocusIn = (e: FocusEvent) => {
+      // If focus escapes to browser chrome or outside dialog, bring it back
+      if (!dialog.contains(e.target as Node)) {
+        e.preventDefault();
+        const focusableElements = getFocusableElements();
+        if (focusableElements.length > 0) {
+          focusableElements[0].focus();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('focusin', handleFocusIn);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('focusin', handleFocusIn);
+    };
+  }, [open]);
 
   // Handle backdrop click
   const handleBackdropClick = (e: React.MouseEvent<HTMLDialogElement>) => {
