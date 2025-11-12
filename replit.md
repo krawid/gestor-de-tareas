@@ -21,6 +21,7 @@ El Gestor de Tareas Accesible es una aplicación de gestión de tareas diseñada
   - Enfoca automáticamente el primer campo interactivo al abrir
   - Restaura el foco al elemento anterior al cerrar (vía Escape, backdrop, o botón)
   - Sincronización correcta de estado para evitar llamadas duplicadas a callbacks
+  - **Focus trap estricto**: El foco queda completamente encerrado en el modal, Tab/Shift+Tab nunca pueden escapar a la barra de direcciones u otros controles del navegador
 - **Inputs nativos 100%**: Todos los componentes de formulario son HTML estándar:
   - `<input>`, `<textarea>`, `<select>` nativos
   - NativeCheckbox: `<input type="checkbox">` con API compatible con Radix
@@ -55,7 +56,7 @@ El Gestor de Tareas Accesible es una aplicación de gestión de tareas diseñada
 
 ### System Design Choices
 - **Priorización de componentes nativos**: Preferencia estricta por elementos HTML nativos (`<dialog>`, `<input>`, `<select>`, `<textarea>`, `<input type="checkbox">`) sobre componentes abstractos (ej. Radix UI) para evitar interferencias con la accesibilidad de lectores de pantalla.
-- **Gestión de foco robusta en NativeDialog**: Implementación con ref `isClosingProgrammatically` para distinguir cierres programáticos de cierres iniciados por usuario, evitando callbacks duplicados y garantizando restauración confiable del foco.
+- **Gestión de foco robusta en NativeDialog**: Implementación con ref `isClosingProgrammatically` para distinguir cierres programáticos de cierres iniciados por usuario, evitando callbacks duplicados y garantizando restauración confiable del foco. Incluye focus trap estricto mediante event listeners de `keydown` y `focusin` que interceptan Tab/Shift+Tab y previenen escape a controles del navegador, manteniendo el foco completamente encerrado dentro del modal.
 - **Separación de responsabilidades**: Componentes de formulario desacoplados del manejo de estado (`react-hook-form` Controller) para mayor flexibilidad.
 - **Normalización de datos**: Backend normaliza descripciones vacías a `undefined` para que Drizzle ORM las convierta a `NULL` en la base de datos.
 - **Ordenamiento automático**: Las tareas se ordenan automáticamente por fecha/hora de vencimiento, con las tareas sin fecha al final.
