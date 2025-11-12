@@ -88,6 +88,13 @@ export function NativeDialog({ open, onOpenChange, children, title, "data-testid
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Handle Escape to close dialog
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onOpenChange(false);
+        return;
+      }
+      
       if (e.key !== 'Tab') return;
 
       const focusableElements = getFocusableElements();

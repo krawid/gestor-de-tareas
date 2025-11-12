@@ -1,5 +1,4 @@
 import { useState, useEffect, useId } from "react";
-import { FormLabel } from "@/components/ui/form";
 import { NativeCheckbox } from "@/components/ui/native-checkbox";
 
 interface DateTimePickerProps {
@@ -157,9 +156,9 @@ export function DateTimePicker({
           <div className="grid grid-cols-3 gap-3">
           {/* Día */}
           <div>
-            <FormLabel htmlFor={dayId} className="text-sm">
+            <label htmlFor={dayId} className="text-sm font-medium">
               Día
-            </FormLabel>
+            </label>
             <select
               id={dayId}
               value={day}
@@ -182,9 +181,9 @@ export function DateTimePicker({
 
           {/* Mes */}
           <div>
-            <FormLabel htmlFor={monthId} className="text-sm">
+            <label htmlFor={monthId} className="text-sm font-medium">
               Mes
-            </FormLabel>
+            </label>
             <select
               id={monthId}
               value={month}
@@ -207,9 +206,9 @@ export function DateTimePicker({
 
           {/* Año */}
           <div>
-            <FormLabel htmlFor={yearId} className="text-sm">
+            <label htmlFor={yearId} className="text-sm font-medium">
               Año
-            </FormLabel>
+            </label>
             <select
               id={yearId}
               value={year}
@@ -272,9 +271,9 @@ export function DateTimePicker({
           <div className="grid grid-cols-2 gap-3">
             {/* Hora */}
             <div>
-              <FormLabel htmlFor={hourId} className="text-sm">
+              <label htmlFor={hourId} className="text-sm font-medium">
                 Hora
-              </FormLabel>
+              </label>
               <select
                 id={hourId}
                 value={hour}
@@ -296,9 +295,9 @@ export function DateTimePicker({
 
             {/* Minutos */}
             <div>
-              <FormLabel htmlFor={minuteId} className="text-sm">
+              <label htmlFor={minuteId} className="text-sm font-medium">
                 Minutos
-              </FormLabel>
+              </label>
               <select
                 id={minuteId}
                 value={minute}
