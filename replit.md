@@ -44,7 +44,7 @@ El Gestor de Tareas Accesible es una aplicación de gestión de tareas diseñada
 - **API RESTful**: Para operaciones CRUD de tareas y listas.
 - **Validación**: Zod para la validación de esquemas de datos.
 - **Manejo de fechas/horas**: Selectores de fecha y hora accesibles y segmentados, compatibles con NVDA y VoiceOver, que evitan los problemáticos inputs `type="date"` y `type="time"`.
-- **Markdown en descripciones**: Uso de `react-markdown` para renderizar descripciones de listas con formato Markdown.
+- **Markdown en descripciones**: Uso de `react-markdown` para renderizar descripciones de tareas y listas con formato Markdown, utilizando las clases de Tailwind Typography (`prose`) para un estilo consistente.
 - **Atajos de teclado globales**: Implementación de `useKeyboardShortcuts` para atajos como N (nueva tarea), L (nueva lista), ? (ayuda) y Escape (cerrar).
 
 ### Feature Specifications

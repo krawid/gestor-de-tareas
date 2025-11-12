@@ -1,3 +1,4 @@
+import ReactMarkdown from "react-markdown";
 import { NativeDialog, NativeDialogContent } from "@/components/ui/native-dialog";
 import type { Task } from "@shared/schema";
 
@@ -21,9 +22,14 @@ export function TaskDetailsDialog({ open, onOpenChange, task }: TaskDetailsDialo
             <h2 className="text-sm font-medium text-muted-foreground mb-2">
               Descripción
             </h2>
-            <p className="text-base whitespace-pre-wrap" data-testid={`text-task-description-detail-${task.id}`}>
-              {task.description || "Sin descripción"}
-            </p>
+            <div 
+              className="prose prose-sm dark:prose-invert max-w-none" 
+              data-testid={`text-task-description-detail-${task.id}`}
+            >
+              <ReactMarkdown>
+                {task.description || "Sin descripción"}
+              </ReactMarkdown>
+            </div>
           </div>
         </div>
       </NativeDialogContent>
