@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Pencil, Trash2, Calendar, AlertCircle } from "lucide-react";
+import { Pencil, Trash2, Calendar, AlertCircle, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NativeCheckbox } from "@/components/ui/native-checkbox";
 import { Badge } from "@/components/ui/badge";
 import { format, isPast, isToday } from "date-fns";
 import { es } from "date-fns/locale";
 import type { Task } from "@shared/schema";
+import { TaskDetailsDialog } from "@/components/task-details-dialog";
 
 interface TaskItemProps {
   task: Task;
@@ -29,6 +30,7 @@ const priorityLabels = {
 };
 
 export function TaskItem({ task, onToggle, onEdit, onDelete }: TaskItemProps) {
+  const [showDetails, setShowDetails] = useState(false);
   const dueDate = task.dueDate ? new Date(task.dueDate) : null;
   const isOverdue = dueDate && !task.completed && isPast(dueDate) && !isToday(dueDate);
   const isDueToday = dueDate && !task.completed && isToday(dueDate);
@@ -72,11 +74,6 @@ export function TaskItem({ task, onToggle, onEdit, onDelete }: TaskItemProps) {
         >
           {task.title}
         </span>
-        {task.description && (
-          <p className="text-sm text-muted-foreground mt-1" data-testid={`text-task-description-${task.id}`}>
-            {task.description}
-          </p>
-        )}
         {dueDate && (
           <div className="flex items-center gap-2 mt-1">
             <span
@@ -101,6 +98,17 @@ export function TaskItem({ task, onToggle, onEdit, onDelete }: TaskItemProps) {
       </label>
 
       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
+        {task.description && (
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => setShowDetails(true)}
+            aria-label={`Ver detalles de ${task.title}`}
+            data-testid={`button-details-${task.id}`}
+          >
+            <FileText className="h-4 w-4" />
+          </Button>
+        )}
         <Button
           size="icon"
           variant="ghost"
@@ -120,6 +128,14 @@ export function TaskItem({ task, onToggle, onEdit, onDelete }: TaskItemProps) {
           <Trash2 className="h-4 w-4" />
         </Button>
       </div>
+
+      {task.description && (
+        <TaskDetailsDialog
+          open={showDetails}
+          onOpenChange={setShowDetails}
+          task={task}
+        />
+      )}
     </div>
   );
 }

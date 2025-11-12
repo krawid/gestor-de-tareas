@@ -49,6 +49,7 @@ El Gestor de Tareas Accesible es una aplicación de gestión de tareas diseñada
 
 ### Feature Specifications
 - **Gestión de tareas**: Creación, edición, eliminación y marcado de tareas como completadas/pendientes. Incluye campos para título, descripción, lista, prioridad y fecha/hora de vencimiento.
+- **Visualización de detalles de tareas**: Las descripciones no se muestran en el listado principal. Para tareas con descripción, aparece un botón "Ver detalles de [nombre]" que abre un modal con la descripción completa. Este botón solo aparece si la tarea tiene descripción.
 - **Listas personalizables**: Creación, edición y eliminación de listas con nombre, color y una descripción opcional en Markdown.
 - **Filtros y búsqueda**: Filtros predefinidos (Todas, Pendientes, Completadas) y búsqueda global en tiempo real por título y descripción de tareas.
 - **Fechas de vencimiento**: Gestión de fechas de vencimiento con opciones para añadir o no fecha y hora específicas, indicadores visuales de estado y ordenamiento automático de tareas.
