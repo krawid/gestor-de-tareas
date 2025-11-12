@@ -16,8 +16,20 @@ El Gestor de Tareas Accesible es una aplicación de gestión de tareas diseñada
 - **HTML Semántico**: Empleo de etiquetas HTML nativas como `<main>`, `<nav>`, `<form>`, `<label>`, `<button>` para una estructura clara y accesible.
 - **Navegación por teclado**: Soporte completo para navegación mediante Tab, Enter y Escape.
 - **Jerarquía de encabezados coherente**: Uso de `h1`, `h2` para estructurar el contenido de forma lógica y navegable por lectores de pantalla.
-- **Diálogos modales nativos**: Migración a elementos `<dialog>` HTML nativos para diálogos de tareas y listas, priorizando el comportamiento estándar del navegador y la accesibilidad.
-- **Inputs nativos**: Reemplazo de componentes de formulario con inputs HTML nativos para garantizar la correcta navegación por caracteres con lectores de pantalla.
+- **Diálogos modales nativos**: Migración completa a elementos `<dialog>` HTML nativos (NativeDialog) con gestión explícita de foco:
+  - Guarda el elemento enfocado antes de abrir
+  - Enfoca automáticamente el primer campo interactivo al abrir
+  - Restaura el foco al elemento anterior al cerrar (vía Escape, backdrop, o botón)
+  - Sincronización correcta de estado para evitar llamadas duplicadas a callbacks
+- **Inputs nativos 100%**: Todos los componentes de formulario son HTML estándar:
+  - `<input>`, `<textarea>`, `<select>` nativos
+  - NativeCheckbox: `<input type="checkbox">` con API compatible con Radix
+- **Consistencia en formularios**: Todos los diálogos de tareas siguen el mismo orden y etiquetado:
+  1. Título
+  2. Descripción (opcional)
+  3. Asignar a lista
+  4. Prioridad
+  5. Fecha/hora de vencimiento
 - **Notificaciones**: Toast notifications con región `aria-live` dedicada para una correcta vocalización por lectores de pantalla.
 - **Siempre visible sidebar**: La barra lateral es siempre visible (no colapsable) para mejorar la accesibilidad, eliminando la necesidad de un toggle.
 
@@ -42,7 +54,8 @@ El Gestor de Tareas Accesible es una aplicación de gestión de tareas diseñada
 - **Accesibilidad total**: Cumplimiento estricto de principios de accesibilidad, incluyendo navegación por teclado, semántica HTML, uso mínimo de ARIA y pruebas con lectores de pantalla (NVDA, VoiceOver).
 
 ### System Design Choices
-- **Priorización de componentes nativos**: Preferencia por elementos HTML nativos (`<dialog>`, `<input>`) sobre componentes abstractos (ej. Radix UI Slot) para evitar interferencias con la accesibilidad de lectores de pantalla.
+- **Priorización de componentes nativos**: Preferencia estricta por elementos HTML nativos (`<dialog>`, `<input>`, `<select>`, `<textarea>`, `<input type="checkbox">`) sobre componentes abstractos (ej. Radix UI) para evitar interferencias con la accesibilidad de lectores de pantalla.
+- **Gestión de foco robusta en NativeDialog**: Implementación con ref `isClosingProgrammatically` para distinguir cierres programáticos de cierres iniciados por usuario, evitando callbacks duplicados y garantizando restauración confiable del foco.
 - **Separación de responsabilidades**: Componentes de formulario desacoplados del manejo de estado (`react-hook-form` Controller) para mayor flexibilidad.
 - **Normalización de datos**: Backend normaliza descripciones vacías a `undefined` para que Drizzle ORM las convierta a `NULL` en la base de datos.
 - **Ordenamiento automático**: Las tareas se ordenan automáticamente por fecha/hora de vencimiento, con las tareas sin fecha al final.
