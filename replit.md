@@ -15,7 +15,7 @@ El Gestor de Tareas Accesible es una aplicación de gestión de tareas diseñada
 - **Componentes accesibles por defecto**: Utiliza Shadcn UI para garantizar la accesibilidad de los componentes.
 - **HTML Semántico**: Empleo de etiquetas HTML nativas como `<main>`, `<nav>`, `<form>`, `<label>`, `<button>` para una estructura clara y accesible.
 - **Navegación por teclado**: Soporte completo para navegación mediante Tab, Enter y Escape.
-- **Jerarquía de encabezados coherente**: Uso de `h1`, `h2` para estructurar el contenido de forma lógica y navegable por lectores de pantalla.
+- **Jerarquía de encabezados coherente**: Uso de `h1` para títulos de diálogos modales y encabezados principales, `h2` para secciones secundarias, estructurando el contenido de forma lógica y navegable por lectores de pantalla.
 - **Diálogos modales nativos**: Migración completa a elementos `<dialog>` HTML nativos (NativeDialog) con gestión explícita de foco:
   - Guarda el elemento enfocado antes de abrir
   - Enfoca automáticamente el primer campo interactivo al abrir
@@ -56,7 +56,7 @@ El Gestor de Tareas Accesible es una aplicación de gestión de tareas diseñada
 
 ### System Design Choices
 - **Priorización de componentes nativos**: Preferencia estricta por elementos HTML nativos (`<dialog>`, `<input>`, `<select>`, `<textarea>`, `<input type="checkbox">`) sobre componentes abstractos (ej. Radix UI) para evitar interferencias con la accesibilidad de lectores de pantalla.
-- **Gestión de foco robusta en NativeDialog**: Implementación con ref `isClosingProgrammatically` para distinguir cierres programáticos de cierres iniciados por usuario, evitando callbacks duplicados y garantizando restauración confiable del foco. Incluye focus trap estricto mediante event listeners de `keydown` y `focusin` que interceptan Tab/Shift+Tab y previenen escape a controles del navegador, manteniendo el foco completamente encerrado dentro del modal.
+- **Gestión de foco robusta en NativeDialog**: Implementación con ref `isClosingProgrammatically` para distinguir cierres programáticos de cierres iniciados por usuario, evitando callbacks duplicados y garantizando restauración confiable del foco. Incluye focus trap estricto mediante event listeners de `keydown` y `focusin` que interceptan Tab/Shift+Tab y previenen escape a controles del navegador, manteniendo el foco completamente encerrado dentro del modal. Utiliza `lastFocusedWithin` ref y `requestAnimationFrame` para manejar elementos dinámicos (que aparecen/desaparecen) sin interrumpir la navegación durante re-renders de React.
 - **Separación de responsabilidades**: Componentes de formulario desacoplados del manejo de estado (`react-hook-form` Controller) para mayor flexibilidad.
 - **Normalización de datos**: Backend normaliza descripciones vacías a `undefined` para que Drizzle ORM las convierta a `NULL` en la base de datos.
 - **Ordenamiento automático**: Las tareas se ordenan automáticamente por fecha/hora de vencimiento, con las tareas sin fecha al final.
