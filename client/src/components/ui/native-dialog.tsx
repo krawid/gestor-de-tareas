@@ -14,6 +14,7 @@ export function NativeDialog({ open, onOpenChange, children, title, "data-testid
   const titleId = useId();
   const previousActiveElement = useRef<HTMLElement | null>(null);
   const isClosingProgrammatically = useRef(false);
+  const lastFocusedWithin = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -124,14 +125,27 @@ export function NativeDialog({ open, onOpenChange, children, title, "data-testid
     };
 
     const handleFocusIn = (e: FocusEvent) => {
+      const target = e.target as HTMLElement;
+      
+      // Track the last focused element within the dialog
+      if (dialog.contains(target)) {
+        lastFocusedWithin.current = target;
+        return;
+      }
+      
       // If focus escapes to browser chrome or outside dialog, bring it back
-      if (!dialog.contains(e.target as Node)) {
-        e.preventDefault();
+      // Use requestAnimationFrame to defer restoration, allowing React re-renders to complete
+      requestAnimationFrame(() => {
         const focusableElements = getFocusableElements();
-        if (focusableElements.length > 0) {
+        if (focusableElements.length === 0) return;
+        
+        // Try to restore to last focused element within dialog, or fall back to first
+        if (lastFocusedWithin.current && focusableElements.includes(lastFocusedWithin.current)) {
+          lastFocusedWithin.current.focus();
+        } else {
           focusableElements[0].focus();
         }
-      }
+      });
     };
 
     document.addEventListener('keydown', handleKeyDown);
@@ -177,9 +191,9 @@ export function NativeDialog({ open, onOpenChange, children, title, "data-testid
       <div className="flex flex-col space-y-4">
         {title && (
           <div className="flex items-start justify-between">
-            <h2 id={titleId} className="text-lg font-semibold">
+            <h1 id={titleId} className="text-lg font-semibold">
               {title}
-            </h2>
+            </h1>
             <button
               type="button"
               onClick={handleClose}
