@@ -39,7 +39,6 @@ export class MemStorage implements IStorage {
       completed: insertTask.completed ?? false,
       priority: insertTask.priority ?? 0,
       dueDate: insertTask.dueDate ?? null,
-      reminderMinutes: insertTask.reminderMinutes ?? null,
       listId: insertTask.listId ?? null,
     };
     this.tasks.push(task);
@@ -183,8 +182,6 @@ export class DatabaseStorage implements IStorage {
 }
 
 // Conditional storage initialization
-let storageInstance: IStorage | null = null;
-
 async function initializeStorage(): Promise<IStorage> {
   if (!process.env.DATABASE_URL) {
     console.warn("⚠️  DATABASE_URL not found. Using in-memory storage (MemStorage). Data will not persist between server restarts.");
@@ -197,6 +194,7 @@ async function initializeStorage(): Promise<IStorage> {
     if (!db) {
       throw new Error("Database instance is null");
     }
+    console.log("✅ Database storage initialized successfully");
     return new DatabaseStorage(db);
   } catch (error) {
     console.error("Failed to initialize database connection:", error);
@@ -205,27 +203,15 @@ async function initializeStorage(): Promise<IStorage> {
   }
 }
 
-// Initialize storage synchronously for cases where DATABASE_URL is not set
-function createStorageSync(): IStorage {
-  if (!process.env.DATABASE_URL) {
-    console.warn("⚠️  DATABASE_URL not found. Using in-memory storage (MemStorage). Data will not persist between server restarts.");
-    return new MemStorage();
+// Initialize storage immediately and export the promise
+const storagePromise = initializeStorage();
+
+// Export a proxy that waits for initialization
+export const storage: IStorage = new Proxy({} as IStorage, {
+  get: (_target, prop) => {
+    return async (...args: any[]) => {
+      const actualStorage = await storagePromise;
+      return (actualStorage as any)[prop](...args);
+    };
   }
-  
-  // If DATABASE_URL is set, we need to handle this differently
-  // Return a temporary instance that will be replaced
-  return new MemStorage();
-}
-
-export let storage: IStorage = createStorageSync();
-
-// Initialize proper storage if DATABASE_URL is available
-if (process.env.DATABASE_URL) {
-  initializeStorage().then(s => {
-    storage = s;
-  }).catch(error => {
-    console.error("Failed to initialize database storage:", error);
-    console.warn("⚠️  Using in-memory storage (MemStorage). Data will not persist between server restarts.");
-    storage = new MemStorage();
-  });
-}
+});
