@@ -10,7 +10,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const tasks = await storage.getTasks();
       res.json(tasks);
     } catch (error) {
-      res.status(500).json({ error: "Failed to fetch tasks" });
+      console.error("Error fetching tasks:", error);
+      res.status(500).json({ error: "Failed to fetch tasks", details: error instanceof Error ? error.message : String(error) });
     }
   });
 
@@ -35,7 +36,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
       }
-      res.status(500).json({ error: "Failed to create task" });
+      console.error("Error creating task:", error);
+      res.status(500).json({ error: "Failed to create task", details: error instanceof Error ? error.message : String(error) });
     }
   });
 
@@ -73,7 +75,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const lists = await storage.getLists();
       res.json(lists);
     } catch (error) {
-      res.status(500).json({ error: "Failed to fetch lists" });
+      console.error("Error fetching lists:", error);
+      res.status(500).json({ error: "Failed to fetch lists", details: error instanceof Error ? error.message : String(error) });
     }
   });
 
@@ -102,7 +105,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
       }
-      res.status(500).json({ error: "Failed to create list" });
+      console.error("Error creating list:", error);
+      res.status(500).json({ error: "Failed to create list", details: error instanceof Error ? error.message : String(error) });
     }
   });
 
