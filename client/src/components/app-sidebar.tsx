@@ -19,6 +19,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { List as ListType, Task } from "@shared/schema";
 import type { TaskFilterType } from "@/components/task-filter";
 import { ViewListDescriptionDialog } from "@/components/view-list-description-dialog";
+import { DataManagement } from "@/components/data-management";
 import { cn } from "@/lib/utils";
 
 interface AppSidebarProps {
@@ -108,7 +109,7 @@ export function AppSidebar({ selectedListId, onListSelect, onAddList, onEditList
                   aria-pressed={selectedListId === null && taskFilter === "all"}
                   data-testid="button-all-tasks"
                 >
-                  <List className="h-4 w-4" />
+                  <List className="h-4 w-4" aria-hidden="true" />
                   <span>Todas las tareas</span>
                   {getTaskCount(null) > 0 && (
                     <Badge variant="secondary" className="ml-auto" data-testid="badge-count-all">
@@ -127,7 +128,7 @@ export function AppSidebar({ selectedListId, onListSelect, onAddList, onEditList
                   aria-pressed={selectedListId === null && taskFilter === "pending"}
                   data-testid="button-pending-tasks"
                 >
-                  <Circle className="h-4 w-4" />
+                  <Circle className="h-4 w-4" aria-hidden="true" />
                   <span>Pendientes</span>
                   {tasks.filter(t => !t.completed).length > 0 && (
                     <Badge variant="secondary" className="ml-auto" data-testid="badge-count-pending">
@@ -146,7 +147,7 @@ export function AppSidebar({ selectedListId, onListSelect, onAddList, onEditList
                   aria-pressed={selectedListId === null && taskFilter === "completed"}
                   data-testid="button-completed-tasks"
                 >
-                  <CheckCircle2 className="h-4 w-4" />
+                  <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
                   <span>Completadas</span>
                   {tasks.filter(t => t.completed).length > 0 && (
                     <Badge variant="secondary" className="ml-auto" data-testid="badge-count-completed">
@@ -182,6 +183,7 @@ export function AppSidebar({ selectedListId, onListSelect, onAddList, onEditList
                         className="h-4 w-4"
                         style={{ color: list.color }}
                         fill={list.color}
+                        aria-hidden="true"
                       />
                       <span>{list.name}</span>
                       {getTaskCount(list.id) > 0 && (
@@ -199,7 +201,7 @@ export function AppSidebar({ selectedListId, onListSelect, onAddList, onEditList
                         data-testid={`button-view-description-${list.id}`}
                         className="h-8 w-8 shrink-0"
                       >
-                        <Eye className="h-4 w-4" />
+                        <Eye className="h-4 w-4" aria-hidden="true" />
                       </Button>
                     )}
                     {onEditList && (
@@ -211,7 +213,7 @@ export function AppSidebar({ selectedListId, onListSelect, onAddList, onEditList
                         data-testid={`button-edit-list-${list.id}`}
                         className="h-8 w-8 shrink-0"
                       >
-                        <Pencil className="h-4 w-4" />
+                        <Pencil className="h-4 w-4" aria-hidden="true" />
                       </Button>
                     )}
                     <Button
@@ -222,7 +224,7 @@ export function AppSidebar({ selectedListId, onListSelect, onAddList, onEditList
                       data-testid={`button-delete-list-${list.id}`}
                       className="h-8 w-8 shrink-0"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-4 w-4" aria-hidden="true" />
                     </Button>
                   </div>
                 </SidebarMenuItem>
@@ -239,9 +241,10 @@ export function AppSidebar({ selectedListId, onListSelect, onAddList, onEditList
           className="w-full justify-start gap-2"
           data-testid="button-add-list"
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="h-4 w-4" aria-hidden="true" />
           Nueva lista
         </Button>
+        <DataManagement />
       </SidebarFooter>
       <ViewListDescriptionDialog
         list={viewingList}

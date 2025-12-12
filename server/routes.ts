@@ -138,6 +138,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Export all data
+  app.get("/api/export", async (_req, res) => {
+    try {
+      const tasks = await storage.getTasks();
+      const lists = await storage.getLists();
+      
+      const exportData = {
+        version: "1.0",
+        exportDate: new Date().toISOString(),
+        lists,
+        tasks,
+      };
+      
+      res.json(exportData);
+    } catch (error) {
+      console.error("Error exporting data:", error);
+      res.status(500).json({ error: "Failed to export data", details: error instanceof Error ? error.message : String(error) });
+    }
+  });
+
+  // Import data
+  app.post("/api/import", async (req, res) => {
+    try {
+      const { lists, tasks, mode } = req.body;
+      
+      // Validate mode
+      if (mode !== "replace" && mode !== "merge") {
+        return res.status(400).json({ error: "Invalid mode. Must be 'replace' or 'merge'" });
+      }
+
+      let importedLists = 0;
+      let importedTasks = 0;
+
+      // If replace mode, we would need to delete all existing data first
+      // For now, we'll just implement merge mode
+      if (mode === "replace") {
+        return res.status(400).json({ error: "Replace mode not yet implemented. Use 'merge' mode." });
+      }
+
+      // Import lists
+      if (Array.isArray(lists)) {
+        for (const list of lists) {
+          try {
+            const validatedList = insertListSchema.parse({
+              name: list.name,
+              description: list.description,
+              color: list.color,
+            });
+            await storage.createList(validatedList);
+            importedLists++;
+          } catch (error) {
+            console.error("Error importing list:", error);
+            // Continue with next list
+          }
+        }
+      }
+
+      // Import tasks
+      if (Array.isArray(tasks)) {
+        for (const task of tasks) {
+          try {
+            const validatedTask = insertTaskSchema.parse({
+              title: task.title,
+              description: task.description,
+              completed: task.completed,
+              priority: task.priority,
+              listId: task.listId,
+              dueDate: task.dueDate,
+            });
+            await storage.createTask(validatedTask);
+            importedTasks++;
+          } catch (error) {
+            console.error("Error importing task:", error);
+            // Continue with next task
+          }
+        }
+      }
+
+      res.json({
+        success: true,
+        imported: {
+          lists: importedLists,
+          tasks: importedTasks,
+        },
+      });
+    } catch (error) {
+      console.error("Error importing data:", error);
+      res.status(500).json({ error: "Failed to import data", details: error instanceof Error ? error.message : String(error) });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

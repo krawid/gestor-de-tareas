@@ -73,6 +73,7 @@ export class MemStorage implements IStorage {
     const list: List = {
       ...insertList,
       id: String(this.listIdCounter++),
+      description: insertList.description ?? null,
       color: insertList.color ?? "#808080",
     };
     this.lists.push(list);
@@ -182,8 +183,6 @@ export class DatabaseStorage implements IStorage {
 }
 
 // Conditional storage initialization
-let storageInstance: IStorage | null = null;
-
 async function initializeStorage(): Promise<IStorage> {
   if (!process.env.DATABASE_URL) {
     console.warn("⚠️  DATABASE_URL not found. Using in-memory storage (MemStorage). Data will not persist between server restarts.");
