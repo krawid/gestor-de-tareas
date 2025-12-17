@@ -135,7 +135,7 @@ export function DateTimePicker({
         />
         <label
           htmlFor={includeDateId}
-          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          className="text-sm font-medium leading-none cursor-pointer peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
         >
           {includeDateLabel}
         </label>
@@ -251,7 +251,7 @@ export function DateTimePicker({
           />
           <label
             htmlFor={includeTimeId}
-            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            className="text-sm font-medium leading-none cursor-pointer peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
           >
             {includeTimeLabel}
           </label>

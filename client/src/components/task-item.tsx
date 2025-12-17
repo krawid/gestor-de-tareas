@@ -52,20 +52,17 @@ export function TaskItem({ task, onToggle, onEdit, onDelete }: TaskItemProps) {
       }}
       data-testid={`task-item-${task.id}`}
     >
-      <NativeCheckbox
-        id={`task-${task.id}`}
-        checked={task.completed}
-        onCheckedChange={(checked) => onToggle(task.id, checked)}
-        className="h-5 w-5"
-        data-testid={`checkbox-task-${task.id}`}
-      />
-      
-      <label
-        htmlFor={`task-${task.id}`}
-        className="flex-1 cursor-pointer"
-      >
-        <span
-          className={`text-base ${
+      <div className="flex items-center gap-3 flex-1">
+        <NativeCheckbox
+          id={`task-${task.id}`}
+          checked={task.completed}
+          onCheckedChange={(checked) => onToggle(task.id, checked)}
+          className="h-5 w-5"
+          data-testid={`checkbox-task-${task.id}`}
+        />
+        <label
+          htmlFor={`task-${task.id}`}
+          className={`flex-1 cursor-pointer text-base ${
             task.completed
               ? "line-through opacity-60"
               : ""
@@ -73,9 +70,9 @@ export function TaskItem({ task, onToggle, onEdit, onDelete }: TaskItemProps) {
           data-testid={`text-task-title-${task.id}`}
         >
           {task.title}
-        </span>
+        </label>
         {dueDate && (
-          <div className="flex items-center gap-2 mt-1">
+          <div className="flex items-center gap-2">
             <span
               className={`text-sm flex items-center gap-1 ${
                 isOverdue ? "text-red-600 dark:text-red-400" : isDueToday ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"
@@ -95,7 +92,7 @@ export function TaskItem({ task, onToggle, onEdit, onDelete }: TaskItemProps) {
             Prioridad: {priorityLabels[task.priority as keyof typeof priorityLabels]}
           </span>
         )}
-      </label>
+      </div>
 
       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
         {task.description && (
