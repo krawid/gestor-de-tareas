@@ -152,8 +152,7 @@ export function DateRangePicker({
     onEndDateChange(newDate);
   };
 
-  const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: 7 }, (_, i) => currentYear - 1 + i);
+  const years = Array.from({ length: 7 }, (_, i) => 2026 + i);
   const days = Array.from({ length: 31 }, (_, i) => i + 1);
   const hours = Array.from({ length: 24 }, (_, i) => i);
   const minutes = Array.from({ length: 60 }, (_, i) => i);

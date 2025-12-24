@@ -33,14 +33,32 @@ npm start
 
 ## Deploy en Railway
 
-1. Conecta tu repositorio de GitHub
+Este proyecto está configurado para desplegarse automáticamente en Railway:
+
+1. Conecta tu repositorio de GitHub a Railway
 2. Railway detectará automáticamente Node.js
-3. Añade PostgreSQL desde el dashboard
+3. Añade PostgreSQL desde el dashboard de Railway
 4. Railway configurará DATABASE_URL automáticamente
-5. Deploy automático
+5. El deploy se ejecuta automáticamente con cada push a main
+
+### Variables de entorno en Railway
+
+Railway configura automáticamente:
+- `DATABASE_URL`: Conexión a PostgreSQL (automática)
+- `PORT`: Puerto del servidor (automática)
+- `NODE_ENV`: Se configura como `production`
+
+### Aplicar migraciones en Railway
+
+Si actualizas desde una versión anterior, conecta a la base de datos de Railway y ejecuta:
+
+```bash
+# Obtén la DATABASE_URL desde el dashboard de Railway
+psql [DATABASE_URL] -f migrations/001_add_start_end_dates.sql
+```
 
 ## Variables de entorno
 
-- `DATABASE_URL`: Conexión a PostgreSQL
-- `PORT`: Puerto del servidor (Railway lo configura automáticamente)
+- `DATABASE_URL`: Conexión a PostgreSQL (Railway la configura automáticamente)
+- `PORT`: Puerto del servidor (Railway la configura automáticamente, default: 5000)
 - `NODE_ENV`: Entorno (development/production)
