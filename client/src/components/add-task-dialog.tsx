@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import type { InsertTask, List } from "@shared/schema";
 import { NativeDialog, NativeDialogFooter } from "@/components/ui/native-dialog";
 import { Button } from "@/components/ui/button";
-import { DateTimePicker } from "@/components/date-time-picker";
+import { DateRangePicker } from "@/components/date-range-picker";
 
 
 interface AddTaskDialogProps {
@@ -17,7 +17,8 @@ export function AddTaskDialog({ open, onOpenChange, onAdd, lists }: AddTaskDialo
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState(0);
   const [listId, setListId] = useState<string | null>(null);
-  const [dueDate, setDueDate] = useState<Date | null>(null);
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
 
   // Reset form when dialog closes
   useEffect(() => {
@@ -26,7 +27,8 @@ export function AddTaskDialog({ open, onOpenChange, onAdd, lists }: AddTaskDialo
       setDescription("");
       setPriority(0);
       setListId(null);
-      setDueDate(null);
+      setStartDate(null);
+      setEndDate(null);
     }
   }, [open]);
 
@@ -43,7 +45,8 @@ export function AddTaskDialog({ open, onOpenChange, onAdd, lists }: AddTaskDialo
       completed: false,
       priority,
       listId,
-      dueDate,
+      startDate,
+      endDate,
     });
     
     onOpenChange(false);
@@ -126,9 +129,11 @@ export function AddTaskDialog({ open, onOpenChange, onAdd, lists }: AddTaskDialo
           </select>
         </div>
 
-        <DateTimePicker
-          value={dueDate}
-          onChange={setDueDate}
+        <DateRangePicker
+          startDate={startDate}
+          endDate={endDate}
+          onStartDateChange={setStartDate}
+          onEndDateChange={setEndDate}
         />
 
         <NativeDialogFooter>

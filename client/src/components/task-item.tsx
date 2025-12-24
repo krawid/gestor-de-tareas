@@ -31,11 +31,12 @@ const priorityLabels = {
 
 export function TaskItem({ task, onToggle, onEdit, onDelete }: TaskItemProps) {
   const [showDetails, setShowDetails] = useState(false);
-  const dueDate = task.dueDate ? new Date(task.dueDate) : null;
-  const isOverdue = dueDate && !task.completed && isPast(dueDate) && !isToday(dueDate);
-  const isDueToday = dueDate && !task.completed && isToday(dueDate);
+  const startDate = task.startDate ? new Date(task.startDate) : null;
+  const endDate = task.endDate ? new Date(task.endDate) : null;
+  const isOverdue = endDate && !task.completed && isPast(endDate) && !isToday(endDate);
+  const isDueToday = endDate && !task.completed && isToday(endDate);
 
-  const formatDueDate = (date: Date) => {
+  const formatDate = (date: Date) => {
     const hasSpecificTime = date.getHours() !== 0 || date.getMinutes() !== 0;
     if (hasSpecificTime) {
       return format(date, "d 'de' MMMM, HH:mm", { locale: es });
@@ -71,20 +72,31 @@ export function TaskItem({ task, onToggle, onEdit, onDelete }: TaskItemProps) {
         >
           {task.title}
         </label>
-        {dueDate && (
-          <div className="flex items-center gap-2">
-            <span
-              className={`text-sm flex items-center gap-1 ${
-                isOverdue ? "text-red-600 dark:text-red-400" : isDueToday ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"
-              }`}
-              data-testid={`text-task-due-date-${task.id}`}
-            >
-              {isOverdue && <AlertCircle className="h-3 w-3" />}
-              <Calendar className="h-3 w-3" />
-              {formatDueDate(dueDate)}
-              {isOverdue && " (Vencida)"}
-              {isDueToday && " (Hoy)"}
-            </span>
+        {(startDate || endDate) && (
+          <div className="flex items-center gap-2 flex-wrap">
+            {startDate && (
+              <span
+                className="text-sm flex items-center gap-1 text-muted-foreground"
+                data-testid={`text-task-start-date-${task.id}`}
+              >
+                <Calendar className="h-3 w-3" />
+                Inicio: {formatDate(startDate)}
+              </span>
+            )}
+            {endDate && (
+              <span
+                className={`text-sm flex items-center gap-1 ${
+                  isOverdue ? "text-red-600 dark:text-red-400" : isDueToday ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"
+                }`}
+                data-testid={`text-task-end-date-${task.id}`}
+              >
+                {isOverdue && <AlertCircle className="h-3 w-3" />}
+                <Calendar className="h-3 w-3" />
+                Fin: {formatDate(endDate)}
+                {isOverdue && " (Vencida)"}
+                {isDueToday && " (Hoy)"}
+              </span>
+            )}
           </div>
         )}
         {task.priority > 0 && (

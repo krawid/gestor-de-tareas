@@ -20,6 +20,9 @@ cp .env.example .env
 # Crear tablas en la base de datos
 npm run db:push
 
+# Si actualizas desde una versión anterior, aplica las migraciones
+psql $DATABASE_URL -f migrations/001_add_start_end_dates.sql
+
 # Desarrollo
 npm run dev
 

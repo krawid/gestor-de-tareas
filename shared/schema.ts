@@ -17,7 +17,8 @@ export const tasks = pgTable("tasks", {
   completed: boolean("completed").notNull().default(false),
   priority: integer("priority").notNull().default(0),
   listId: varchar("list_id").references(() => lists.id),
-  dueDate: timestamp("due_date"),
+  startDate: timestamp("start_date"),
+  endDate: timestamp("end_date"),
 });
 
 export const insertListSchema = createInsertSchema(lists, {
@@ -29,7 +30,14 @@ export const insertListSchema = createInsertSchema(lists, {
 
 export const insertTaskSchema = createInsertSchema(tasks, {
   title: z.string().min(1, "El título es requerido"),
-  dueDate: z.union([z.string(), z.date(), z.null()]).transform((val) => {
+  startDate: z.union([z.string(), z.date(), z.null()]).transform((val) => {
+    if (val === null || val === undefined) return null;
+    if (typeof val === 'string') {
+      return new Date(val);
+    }
+    return val;
+  }).optional(),
+  endDate: z.union([z.string(), z.date(), z.null()]).transform((val) => {
     if (val === null || val === undefined) return null;
     if (typeof val === 'string') {
       return new Date(val);

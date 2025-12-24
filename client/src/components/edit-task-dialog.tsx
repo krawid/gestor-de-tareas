@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { NativeDialog, NativeDialogFooter } from "@/components/ui/native-dialog";
 import { Button } from "@/components/ui/button";
-import { DateTimePicker } from "@/components/date-time-picker";
+import { DateRangePicker } from "@/components/date-range-picker";
 import type { Task, List } from "@shared/schema";
 import { useQuery } from "@tanstack/react-query";
 
@@ -21,7 +21,8 @@ export function EditTaskDialog({ task, open, onOpenChange, onSave }: EditTaskDia
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState(0);
   const [listId, setListId] = useState<string | null>(null);
-  const [dueDate, setDueDate] = useState<Date | null>(null);
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
 
   useEffect(() => {
     if (task) {
@@ -29,7 +30,8 @@ export function EditTaskDialog({ task, open, onOpenChange, onSave }: EditTaskDia
       setDescription(task.description || "");
       setPriority(task.priority);
       setListId(task.listId);
-      setDueDate(task.dueDate ? new Date(task.dueDate) : null);
+      setStartDate(task.startDate ? new Date(task.startDate) : null);
+      setEndDate(task.endDate ? new Date(task.endDate) : null);
     }
   }, [task]);
 
@@ -45,7 +47,8 @@ export function EditTaskDialog({ task, open, onOpenChange, onSave }: EditTaskDia
       description: description.trim() || "",
       priority,
       listId,
-      dueDate,
+      startDate,
+      endDate,
     });
     
     onOpenChange(false);
@@ -127,9 +130,11 @@ export function EditTaskDialog({ task, open, onOpenChange, onSave }: EditTaskDia
           </select>
         </div>
 
-        <DateTimePicker
-          value={dueDate}
-          onChange={setDueDate}
+        <DateRangePicker
+          startDate={startDate}
+          endDate={endDate}
+          onStartDateChange={setStartDate}
+          onEndDateChange={setEndDate}
         />
 
         <NativeDialogFooter>

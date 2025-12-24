@@ -38,7 +38,8 @@ export class MemStorage implements IStorage {
       description: insertTask.description ?? null,
       completed: insertTask.completed ?? false,
       priority: insertTask.priority ?? 0,
-      dueDate: insertTask.dueDate ?? null,
+      startDate: insertTask.startDate ?? null,
+      endDate: insertTask.endDate ?? null,
       listId: insertTask.listId ?? null,
     };
     this.tasks.push(task);

@@ -76,17 +76,17 @@ const Home = forwardRef<HomeRef, HomeProps>(
       filteredTasks = filteredTasks.filter(task => !task.completed);
     }
 
-    // Ordenar tareas: primero las que tienen fecha (ordenadas por fecha Y hora ascendente), luego las sin fecha
+    // Ordenar tareas: primero las que tienen fecha de fin (ordenadas por fecha Y hora ascendente), luego las sin fecha
     const tasksWithDate = filteredTasks
-      .filter(task => task.dueDate !== null)
+      .filter(task => task.endDate !== null)
       .sort((a, b) => {
         // getTime() incluye fecha completa con horas, minutos, segundos, etc.
-        const dateA = new Date(a.dueDate!).getTime();
-        const dateB = new Date(b.dueDate!).getTime();
+        const dateA = new Date(a.endDate!).getTime();
+        const dateB = new Date(b.endDate!).getTime();
         return dateA - dateB; // Ascendente: las más próximas primero
       });
     
-    const tasksWithoutDate = filteredTasks.filter(task => task.dueDate === null);
+    const tasksWithoutDate = filteredTasks.filter(task => task.endDate === null);
     
     filteredTasks = [...tasksWithDate, ...tasksWithoutDate];
 
