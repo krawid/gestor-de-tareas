@@ -98,8 +98,9 @@ export function DateTimePicker({
     onChange(newDate);
   };
 
-  // Generar años (2026 hasta 2032)
-  const years = Array.from({ length: 7 }, (_, i) => 2026 + i);
+  // Generar años (año actual hasta año actual + 9)
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 10 }, (_, i) => currentYear + i);
 
   // Generar días (1-31)
   const days = Array.from({ length: 31 }, (_, i) => i + 1);
